@@ -1,6 +1,7 @@
 import { cars as seedCars } from "@/lib/cars";
 import { notFound } from "next/navigation";
 import BookingBox from "@/components/BookingBox";
+import CarGallery from "@/components/CarGallery";
 import { prisma } from "@/lib/prisma";
 
 export async function generateStaticParams(){ return seedCars.map(c=>({slug:c.slug})) }
@@ -10,7 +11,6 @@ export default async function Detail({params}:{params:{slug:string}}){
   try{ car = await prisma.car.findUnique({where:{slug: params.slug}}); }catch{}
   if(!car) {
     try{
-      const { readCars } = await import("@/lib/carsStore");
       const { getCarBySlug } = await import("@/lib/carsStore");
       car = getCarBySlug(params.slug) || seedCars.find(c=>c.slug===params.slug);
     }catch{ car = seedCars.find(c=>c.slug===params.slug); }
@@ -20,20 +20,17 @@ export default async function Detail({params}:{params:{slug:string}}){
   try{ const g = await prisma.globalRequirements.findUnique({where:{id:"global"}}); if(g) globalReq=g.items; }catch{}
   const reqs: string[] = car.requirements?.length ? car.requirements : (globalReq.length? globalReq : ["KTP","SIM A","Deposit"]);
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="max-w-6xl mx-auto px-3 sm:px-4 py-6 sm:py-8 min-w-0">
       <a href="/" className="text-sm text-gray-500">← Kembali katalog</a>
-      <div className="mt-4 grid lg:grid-cols-2 gap-8">
+      <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 min-w-0">
         <div>
-          <img src={car.images[0]} alt={car.name} className="w-full h-80 object-cover rounded-2xl border" />
-          <div className="mt-3 grid grid-cols-3 gap-2">
-            {car.images.map((im:string,i:number)=><img key={i} src={im} alt="" className="h-24 object-cover rounded-xl border" />)}
-          </div>
-          <div className="mt-6 bg-white border rounded-2xl p-5">
+          <CarGallery images={car.images} name={car.name} />
+          <div className="mt-6 bg-white border rounded-2xl p-5 gloss">
             <h3 className="font-bold">Fasilitas</h3>
             <div className="mt-2 flex flex-wrap gap-2">{car.features.map((f:string)=><span key={f} className="text-xs bg-gray-100 px-2 py-1 rounded-full">{f}</span>)}</div>
             <h3 className="font-bold mt-5">Persyaratan Sewa</h3>
             <ul className="mt-2 text-sm text-gray-600 list-disc ml-5 space-y-1">
-              {reqs.map(r=><li key={r}>{r}</li>)}
+              {reqs.map((r:string)=><li key={r}>{r}</li>)}
               <li>Dengan supir: sudah termasuk driver, BBM & tol ditanggung penyewa.</li>
               <li>Durasi harian (24 jam), nego jam/bulanan via WA.</li>
               <li>QRIS / Transfer manual — upload bukti, admin konfirmasi manual.</li>

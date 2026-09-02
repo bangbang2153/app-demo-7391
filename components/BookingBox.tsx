@@ -1,8 +1,8 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import type { Car } from "@/lib/cars";
 import { calcTotal, daysBetween } from "@/lib/pricing";
-import { waLink, waBookingText } from "@/lib/wa";
+import { renderWaTemplate } from "@/lib/waTemplate";
 
 export default function BookingBox({car}:{car:Car}){
   const [start,setStart]=useState("");
@@ -13,6 +13,18 @@ export default function BookingBox({car}:{car:Car}){
   const [pay,setPay]=useState<"DP 30%"|"FULL">("DP 30%");
   const [loading,setLoading]=useState(false);
   const [msg,setMsg]=useState("");
+  const [waNumber,setWaNumber]=useState("6283123768532");
+  const [waTemplate,setWaTemplate]=useState("Halo Mashudi Transport, mau sewa (car) tgl (start) s/d (end) (mode). Total Rp (total). Bisa nego?");
+  useEffect(()=>{
+    fetch("/api/settings").then(r=>r.json()).then(s=>{
+      if(s.waNumber) setWaNumber(s.waNumber);
+      if(s.waTemplate) setWaTemplate(s.waTemplate);
+    }).catch(()=>{});
+  },[]);
+  function waLink(){
+    const txt = renderWaTemplate(waTemplate, {car: car.name, start: start||"...", end: end||"...", mode, total: total.toLocaleString("id-ID")});
+    return `https://wa.me/${waNumber}?text=${encodeURIComponent(txt)}`;
+  }
 
   const days = useMemo(()=> (start&&end ? daysBetween(start,end) : 0), [start,end]);
   const withDriver = mode==="DENGAN_SUPIR";
@@ -35,10 +47,8 @@ export default function BookingBox({car}:{car:Car}){
     setLoading(false);
   }
 
-  const waText = start&&end ? waBookingText(car.name, start, end, mode, total) : `Halo Mashudi Transport, mau sewa ${car.name}`;
-
   return (
-    <div className="bg-white border rounded-2xl p-5 shadow-sm">
+    <div className="bg-white border rounded-2xl p-5 gloss">
       <h3 className="font-bold">Booking</h3>
       <div className="mt-4 grid gap-3">
         <div className="grid grid-cols-2 gap-3">
@@ -57,9 +67,9 @@ export default function BookingBox({car}:{car:Car}){
           <button onClick={()=>setPay("FULL")} className={`flex-1 py-2 rounded-full border ${pay==="FULL"?"bg-red-600 text-white border-red-600":""}`}>Bayar Full</button>
         </div>
         <button onClick={submit} disabled={loading} className="w-full py-3 rounded-full bg-red-600 text-white font-bold disabled:opacity-50">{loading?"Memproses...":"Booking Sekarang"}</button>
-        <a href={waLink(waText)} target="_blank" className="text-center py-3 rounded-full border font-semibold">Nego via WA</a>
+        <a href={waLink()} target="_blank" className="text-center py-3 rounded-full border font-semibold">Nego via WA</a>
         {msg && <div className="text-sm p-3 rounded-xl bg-red-50 border border-red-200">{msg}</div>}
-        <div className="text-xs text-gray-500">Pembayaran: Transfer BCA/BRI/Mandiri atau QRIS (info dikirim WA setelah booking). Upload bukti di konfirmasi WA.</div>
+        <div className="text-xs text-gray-500">Pembayaran: Transfer BCA/BRI/Mandiri atau QRIS (info dikirim WA setelah booking).</div>
       </div>
     </div>
   )

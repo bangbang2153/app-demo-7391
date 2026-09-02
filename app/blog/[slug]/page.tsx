@@ -13,7 +13,7 @@ export default async function BlogDetail({params}:{params:{slug:string}}){
       <div className="mt-4 text-xs tracking-widest text-red-600 font-bold">{post.category} • {post.author}</div>
       <h1 className="text-3xl font-black leading-tight mt-1">{post.title}</h1>
       <p className="text-sm text-gray-500 mt-2">{new Date(post.createdAt).toLocaleDateString("id-ID",{dateStyle:"long"})} • {post.views} views</p>
-      <img src={post.cover} alt={post.title} className="mt-6 w-full h-80 object-cover rounded-2xl border" />
+      <img loading="lazy" decoding="async" src={post.cover} alt={post.title} className="mt-6 w-full h-80 object-cover rounded-2xl border" />
       <div className="mt-3 flex flex-wrap gap-2">{post.tags.map((t:string)=><span key={t} className="text-xs bg-gray-100 px-2 py-1 rounded-full">{t}</span>)}</div>
       <article className="prose prose-sm max-w-none mt-6 bg-white border rounded-2xl p-6 text-gray-700 leading-relaxed" dangerouslySetInnerHTML={{__html: post.content}} />
       <div className="mt-6 bg-red-50 border border-red-200 rounded-2xl p-5">

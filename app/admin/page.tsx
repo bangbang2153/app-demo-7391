@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import type { Car } from "@/lib/cars";
+import { renderWaTemplate } from "@/lib/waTemplate";
 
 type B = {id:string; carId:string; carName:string; name:string; wa:string; start:string; end:string; mode:string; total:number; payOption:string; status:string; payStatus?:string; proofUrl?:string; createdAt:string};
 
@@ -15,25 +16,27 @@ export default function Admin(){
   const [bookings,setBookings]=useState<B[]>([]);
   const [cars,setCars]=useState<Car[]>([]);
   const [filter,setFilter]=useState("Semua");
-  const [tab,setTab]=useState<"booking"|"armada"|"blog"|"banner"|"akun">("booking");
+  const [tab,setTab]=useState<"booking"|"armada"|"blog"|"banner"|"wa"|"akun">("booking");
   const [showCarModal,setShowCarModal]=useState(false);
   const [editingCar,setEditingCar]=useState<Car|null>(null);
   const [form,setForm]=useState<any>({});
   const [uploading,setUploading]=useState(false);
   const [pwForm,setPwForm]=useState({currentPass:"", newUser:"", newPass:"", confirmPass:""});
   const [pwMsg,setPwMsg]=useState(""); const [pwOk,setPwOk]=useState("");
+  const [confirm,setConfirm]=useState<{open:boolean; title:string; message:string; onConfirm:()=>void; variant?: "danger"|"warn"}>({open:false, title:"", message:"", onConfirm:()=>{}});
   const [posts,setPosts]=useState<any[]>([]); const [banners,setBanners]=useState<any[]>([]); const [blogForm,setBlogForm]=useState<any>({}); const [bannerForm,setBannerForm]=useState<any>({}); const [editingPost,setEditingPost]=useState<any>(null); const [editingBanner,setEditingBanner]=useState<any>(null);
   const [globalReq,setGlobalReq]=useState<string>("KTP, SIM A, Deposit / Jaminan"); const [globalMsg,setGlobalMsg]=useState("");
+  const [waNumber,setWaNumber]=useState("6283123768532"); const [waTemplate,setWaTemplate]=useState("Halo Mashudi Transport, mau sewa (car) tgl (start) s/d (end) (mode). Total Rp (total). Bisa nego?"); const [waMsg,setWaMsg]=useState("");
 
   function checkAuth(){ setAuthed(getCookie("mashudi_admin")==="mashudi-admin-v1"); }
-  useEffect(()=>{ checkAuth(); if(getCookie("mashudi_admin")==="mashudi-admin-v1"){ load(); loadCars(); loadGlobalReq(); loadPosts(); loadBanners(); } },[]);
+  useEffect(()=>{ checkAuth(); if(getCookie("mashudi_admin")==="mashudi-admin-v1"){ load(); loadCars(); loadGlobalReq(); loadPosts(); loadBanners(); loadWaSettings(); } },[]);
 
   async function login(){
     setMsg("");
     const r = await fetch("/api/admin/login",{method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({user, pass})});
     const j = await r.json();
     if(!r.ok){ setMsg(j.error||"Gagal login"); return; }
-    setTimeout(checkAuth,100); setTimeout(()=>{load(); loadCars(); loadGlobalReq(); loadPosts(); loadBanners();},200);
+    setTimeout(checkAuth,100); setTimeout(()=>{load(); loadCars(); loadGlobalReq(); loadPosts(); loadBanners(); loadWaSettings();},200);
   }
   async function logout(){
     await fetch("/api/admin/login",{method:"DELETE"});
@@ -61,10 +64,13 @@ export default function Admin(){
     setBookings(prev=> prev.map(b=> b.id===id? updated: b));
   }
   async function deleteBooking(id:string){
-    if(!confirm("Hapus booking ini?")) return;
-    const r = await fetch(`/api/admin/bookings/update?id=${id}`,{method:"DELETE"});
-    if(!r.ok){ alert("Gagal hapus"); return; }
-    setBookings(prev=> prev.filter(b=>b.id!==id));
+    setConfirm({open:true, title:"Hapus booking?", message:"Booking ini akan dihapus permanen dan tidak bisa dikembalikan.", variant:"danger", onConfirm: async ()=>{
+      setConfirm(s=>({...s, open:false}));
+      const r = await fetch(`/api/admin/bookings/update?id=${id}`,{method:"DELETE"});
+      if(!r.ok){ alert("Gagal hapus"); return; }
+      setBookings(prev=> prev.filter(b=>b.id!==id));
+    }});
+    return;
   }
   async function uploadFile(file:File):Promise<string>{
     setUploading(true);
@@ -109,19 +115,18 @@ export default function Admin(){
     setPwForm({currentPass:"", newUser:j.user, newPass:"", confirmPass:""});
   }
   async function deleteCar(id:string){
-    if(!confirm("Hapus armada ini?")) return;
-    const r = await fetch(`/api/admin/cars/${id}?id=${id}`, {method:"DELETE"});
-    // fallback to query param route
-    let r2 = r;
-    if(!r.ok){
-      r2 = await fetch(`/api/admin/cars/${id}`, {method:"DELETE"});
-    }
-    if(!r2.ok){
-      // try alternative endpoint with id in json
-      const rr = await fetch("/api/admin/cars/"+id, {method:"DELETE", headers:{"Content-Type":"application/json"}, body: JSON.stringify({id})});
-      if(!rr.ok){ alert("Gagal hapus: "+await rr.text()); return; }
-    }
-    loadCars();
+    setConfirm({open:true, title:"Hapus armada?", message:"Armada ini akan dihapus permanen. Booking terkait tetap ada tapi mobil tidak bisa dibooking lagi.", variant:"danger", onConfirm: async ()=>{
+      setConfirm(s=>({...s, open:false}));
+      const r = await fetch(`/api/admin/cars/${id}?id=${id}`, {method:"DELETE"});
+      let r2 = r;
+      if(!r.ok){ r2 = await fetch(`/api/admin/cars/${id}`, {method:"DELETE"}); }
+      if(!r2.ok){
+        const rr = await fetch("/api/admin/cars/"+id, {method:"DELETE", headers:{"Content-Type":"application/json"}, body: JSON.stringify({id})});
+        if(!rr.ok){ alert("Gagal hapus: "+await rr.text()); return; }
+      }
+      loadCars();
+    }});
+    return;
   }
   async function loadGlobalReq(){
     try{
@@ -140,7 +145,13 @@ export default function Admin(){
     if(!r.ok){ alert("Gagal simpan post: "+await r.text()); return; }
     setEditingPost(null); setBlogForm({}); loadPosts();
   }
-  async function deletePost(id:string){ if(!confirm("Hapus post?"))return; await fetch(`/api/admin/blog/${id}`,{method:"DELETE"}); loadPosts(); }
+  async function deletePost(id:string){
+    setConfirm({open:true, title:"Hapus post blog?", message:"Post kuliner ini akan dihapus permanen.", variant:"danger", onConfirm: async ()=>{
+      setConfirm(s=>({...s, open:false}));
+      await fetch(`/api/admin/blog/${id}`,{method:"DELETE"}); loadPosts();
+    }});
+    return;
+  }
   async function saveBanner(){
     const payload={...bannerForm};
     let r;
@@ -149,7 +160,31 @@ export default function Admin(){
     if(!r.ok){ alert("Gagal simpan banner: "+await r.text()); return; }
     setEditingBanner(null); setBannerForm({}); loadBanners();
   }
-  async function deleteBanner(id:string){ if(!confirm("Hapus banner?"))return; await fetch(`/api/admin/banner/${id}`,{method:"DELETE"}); loadBanners(); }
+  async function toggleBannerActive(id:string, cur:boolean){
+    await fetch(`/api/admin/banner/${id}`,{method:"PUT", headers:{"Content-Type":"application/json"}, body: JSON.stringify({active: !cur})});
+    loadBanners();
+  }
+  async function deleteBanner(id:string){
+    setConfirm({open:true, title:"Hapus banner?", message:"Banner popup ini akan dihapus. Pop-up tidak akan muncul lagi sampai ada banner aktif baru.", variant:"warn", onConfirm: async ()=>{
+      setConfirm(s=>({...s, open:false}));
+      await fetch(`/api/admin/banner/${id}`,{method:"DELETE"}); loadBanners();
+    }});
+    return;
+  }
+
+  async function loadWaSettings(){
+    try{
+      const r=await fetch("/api/settings");
+      if(r.ok){ const j=await r.json(); if(j.waNumber) setWaNumber(j.waNumber); if(j.waTemplate) setWaTemplate(j.waTemplate); }
+    }catch{}
+  }
+  async function saveWaSettings(){
+    setWaMsg("");
+    const r=await fetch("/api/admin/settings",{method:"PUT", headers:{"Content-Type":"application/json"}, body: JSON.stringify({waNumber, waTemplate})});
+    const j=await r.json();
+    if(!r.ok){ setWaMsg(j.error||"Gagal"); return; }
+    setWaMsg("Tersimpan! No: "+j.waNumber);
+  }
   async function saveGlobal(bulk:boolean){
     setGlobalMsg("");
     const items = globalReq.split(",").map((s:string)=>s.trim()).filter(Boolean);
@@ -168,7 +203,7 @@ export default function Admin(){
   if(!authed){
     return (
       <div className="min-h-[70vh] flex items-center justify-center px-4">
-        <div className="w-full max-w-sm bg-white border rounded-2xl p-6 shadow-sm">
+        <div className="w-full max-w-sm bg-white border rounded-2xl p-6">
           <div className="w-12 h-12 rounded-full bg-red-600 flex items-center justify-center text-white font-black">M</div>
           <h1 className="mt-4 text-xl font-black">Admin Login</h1>
           <p className="text-sm text-gray-500">MASHUDI TRANSPORT — akses terbatas • QRIS/manual konfirmasi</p>
@@ -185,34 +220,56 @@ export default function Admin(){
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="max-w-6xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-black tracking-tight flex items-center gap-2"><span className="w-9 h-9 rounded-full bg-red-600 text-white grid place-items-center text-sm">M</span> Admin — MASHUDI TRANSPORT</h1>
           <p className="text-sm text-gray-500 mt-1">{pending} pending • {bookings.length} total booking • QRIS & transfer manual (konfirmasi admin)</p>
-          <div className="mt-3 flex gap-2">
-            <button onClick={()=>setTab("booking")} className={`px-4 py-2 rounded-full text-sm font-bold border ${tab==="booking"?"bg-gray-900 text-white border-gray-900":"bg-white hover:bg-gray-50"}`}>Booking</button>
-            <button onClick={()=>setTab("armada")} className={`px-4 py-2 rounded-full text-sm font-bold border ${tab==="armada"?"bg-gray-900 text-white border-gray-900":"bg-white hover:bg-gray-50"}`}>Armada ({cars.length})</button>
-            <button onClick={()=>setTab("blog")} className={`px-4 py-2 rounded-full text-sm font-bold border ${tab==="blog"?"bg-gray-900 text-white border-gray-900":"bg-white hover:bg-gray-50"}`}>Blog ({posts.length})</button>
-            <button onClick={()=>setTab("banner")} className={`px-4 py-2 rounded-full text-sm font-bold border ${tab==="banner"?"bg-gray-900 text-white border-gray-900":"bg-white hover:bg-gray-50"}`}>Banner ({banners.length})</button>
-            <button onClick={()=>setTab("akun")} className={`px-4 py-2 rounded-full text-sm font-bold border ${tab==="akun"?"bg-gray-900 text-white border-gray-900":"bg-white hover:bg-gray-50"}`}>Akun</button>
+          <div className="mt-3 flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 flex-nowrap scrollbar-none">
+            <button onClick={()=>setTab("booking")} className={`px-4 py-2 rounded-full text-sm font-bold border shrink-0 whitespace-nowrap ${tab==="booking"?"bg-gray-900 text-white border-gray-900":"bg-white hover:bg-gray-50"}`}>Booking</button>
+            <button onClick={()=>setTab("armada")} className={`px-4 py-2 rounded-full text-sm font-bold border shrink-0 whitespace-nowrap ${tab==="armada"?"bg-gray-900 text-white border-gray-900":"bg-white hover:bg-gray-50"}`}>Armada ({cars.length})</button>
+            <button onClick={()=>setTab("blog")} className={`px-4 py-2 rounded-full text-sm font-bold border shrink-0 whitespace-nowrap ${tab==="blog"?"bg-gray-900 text-white border-gray-900":"bg-white hover:bg-gray-50"}`}>Blog ({posts.length})</button>
+            <button onClick={()=>setTab("banner")} className={`px-4 py-2 rounded-full text-sm font-bold border shrink-0 whitespace-nowrap ${tab==="banner"?"bg-gray-900 text-white border-gray-900":"bg-white hover:bg-gray-50"}`}>Banner ({banners.length})</button>
+            <button onClick={()=>setTab("wa")} className={`px-4 py-2 rounded-full text-sm font-bold border shrink-0 whitespace-nowrap ${tab==="wa"?"bg-gray-900 text-white border-gray-900":"bg-white hover:bg-gray-50"}`}>WA</button>
+            <button onClick={()=>setTab("akun")} className={`px-4 py-2 rounded-full text-sm font-bold border shrink-0 whitespace-nowrap ${tab==="akun"?"bg-gray-900 text-white border-gray-900":"bg-white hover:bg-gray-50"}`}>Akun</button>
           </div>
         </div>
         <button onClick={logout} className="px-4 py-2 rounded-full border text-sm hover:bg-gray-50">Logout</button>
       </div>
+      {tab==="wa" && (
+        <div className="mt-6 max-w-2xl bg-white border rounded-2xl p-4 sm:p-6 shadow-sm">
+          <h2 className="font-bold">Pengaturan WA & Template Direct</h2>
+          <div className="mt-4 grid gap-3">
+            <label className="text-sm font-semibold">No WA (format 62..)
+              <input value={waNumber} onChange={e=>setWaNumber(e.target.value)} placeholder="6283123768532" className="mt-1 w-full border rounded-xl px-3 py-2" />
+            </label>
+            <label className="text-sm font-semibold">Template WA
+              <textarea value={waTemplate} onChange={e=>setWaTemplate(e.target.value)} rows={4} placeholder="Halo Mashudi Transport, mau sewa (car) tgl (start) s/d (end) (mode). Total Rp (total). Bisa nego?" className="mt-1 w-full border rounded-xl px-3 py-2 text-sm" />
+              <div className="text-xs bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 text-amber-800">⚠️ WAJIB JANGAN DIHAPUS: <b>(car) (start) (end) (mode) (total)</b> harus tetap ada — nanti otomatis jadi nama mobil / tanggal / total. Kalau dihapus WA jadi kosong. Tag HTML/JS otomatis dibuang.</div>
+            </label>
+            <div className="text-xs bg-gray-50 border rounded-xl p-3">Preview: {renderWaTemplate(waTemplate, {car:"Avanza", start:"2026-09-10", end:"2026-09-12", mode:"LEPAS_KUNCI", total:"700.000"})}</div>
+            {waMsg && <div className="text-sm p-3 rounded-xl bg-amber-50 border border-amber-200">{waMsg}</div>}
+            <div className="flex flex-col sm:flex-row gap-2">
+              <button onClick={saveWaSettings} className="flex-1 py-3 rounded-full bg-red-600 text-white font-bold hover:bg-red-700">Simpan WA</button>
+              <button onClick={()=>{ setWaNumber("6283123768532"); setWaTemplate("Halo Mashudi Transport, mau sewa (car) tgl (start) s/d (end) (mode). Total Rp (total). Bisa nego?"); setWaMsg("Direset ke default — klik Simpan WA untuk menyimpan."); }} className="px-6 py-3 rounded-full border font-bold hover:bg-gray-50 text-sm">Reset Default</button>
+            </div>
+          </div>
+        </div>
+      )}
 
-      <div className="mt-6 grid sm:grid-cols-3 gap-4">
-        <div className="bg-white border rounded-2xl p-5 shadow-sm">
+
+      <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+        <div className="bg-white border rounded-2xl p-4 sm:p-5">
           <div className="text-xs tracking-widest text-gray-400 font-semibold">TOTAL BOOKING</div>
           <div className="text-3xl font-black mt-1">{bookings.length}</div>
           <div className="text-xs text-gray-500 mt-1">{pending} pending perlu tindak</div>
         </div>
-        <div className="bg-gradient-to-br from-red-600 to-red-500 text-white rounded-2xl p-5 shadow-sm">
+        <div className="bg-red-600 text-white rounded-2xl p-4 sm:p-5">
           <div className="text-xs tracking-widest text-white/80 font-semibold">ESTIMASI PENDAPATAN</div>
           <div className="text-3xl font-black mt-1">Rp {income.toLocaleString("id-ID")}</div>
           <div className="text-xs text-white/80 mt-1">paid / confirmed / dp_paid (QRIS/manual verifikasi)</div>
         </div>
-        <div className="bg-white border rounded-2xl p-5 shadow-sm">
+        <div className="bg-white border rounded-2xl p-4 sm:p-5">
           <div className="text-xs tracking-widest text-gray-400 font-semibold">ARMADA</div>
           <div className="text-3xl font-black mt-1">{cars.length} tipe</div>
           <div className="text-xs text-gray-500 mt-1">Klik armada untuk edit • data/cars.json</div>
@@ -220,7 +277,7 @@ export default function Admin(){
       </div>
 
       {tab==="booking" && (
-        <div className="mt-6 bg-white border rounded-2xl shadow-sm overflow-hidden">
+        <div className="mt-6 bg-white border rounded-2xl overflow-hidden">
           <div className="p-5 flex flex-wrap gap-2 items-center justify-between border-b bg-gray-50/50">
             <h2 className="font-bold flex items-center gap-2">Daftar Booking <span className="text-xs font-normal text-gray-500">{filtered.length} data</span></h2>
             <div className="flex flex-wrap gap-2">
@@ -230,7 +287,8 @@ export default function Admin(){
               <button onClick={load} className="px-4 py-1.5 rounded-full text-xs font-bold bg-red-600 text-white hover:bg-red-700">Refresh</button>
             </div>
           </div>
-          <div className="overflow-auto">
+          <div className="overflow-x-auto -mx-4 sm:mx-0">
+            <div className="min-w-[680px] px-4 sm:px-0">
             <table className="w-full text-sm">
               <thead className="text-left text-xs tracking-widest text-gray-400"><tr><th className="px-4 py-3 font-semibold">ID</th><th className="py-3">Mobil</th><th className="py-3">Penyewa</th><th className="py-3">Tanggal</th><th className="py-3">Mode/Bayar</th><th className="py-3">Total</th><th className="py-3">Status</th><th className="px-4 py-3">Aksi</th></tr></thead>
               <tbody>
@@ -257,6 +315,7 @@ export default function Admin(){
                 {filtered.length===0 && <tr><td colSpan={8} className="text-center py-10 text-gray-400 text-sm">Belum ada booking</td></tr>}
               </tbody>
             </table>
+            </div>
           </div>
           <div className="p-4 bg-red-50 border-t border-red-200 text-xs text-red-800">QRIS / Transfer: <b>manual konfirmasi</b> — setelah penyewa upload bukti via WA, admin cek & klik Paid/Confirm di sini. ponytail: auto-verify via Midtrans webhook upgrade nanti.</div>
         </div>
@@ -264,7 +323,7 @@ export default function Admin(){
 
       {tab==="armada" && (
         <div className="mt-6">
-          <div className="bg-white border rounded-2xl p-5 shadow-sm mb-4">
+          <div className="bg-white border rounded-2xl p-5 mb-4">
             <h3 className="font-bold">Persyaratan Sewa (Global & Bulk)</h3>
             <p className="text-xs text-gray-500 mt-1">Ubah untuk semua armada sekaligus, atau edit per-mobil via klik kartu. Default: KTP, SIM A, Deposit</p>
             <div className="mt-3 flex flex-col sm:flex-row gap-2">
@@ -281,8 +340,8 @@ export default function Admin(){
           </div>
           <div className="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {cars.map(c=>(
-              <div key={c.id} onClick={()=>openEdit(c)} className="border rounded-2xl overflow-hidden hover:shadow-md transition bg-white cursor-pointer group">
-                <img src={c.images[0]} alt={c.name} className="h-36 w-full object-cover group-hover:scale-[1.02] transition" />
+              <div key={c.id} onClick={()=>openEdit(c)} className="border rounded-2xl overflow-hidden bg-white cursor-pointer group">
+                <img loading="lazy" decoding="async" src={c.images[0]} alt={c.name} className="h-36 w-full object-cover " />
                 <div className="p-4">
                   <div className="text-xs text-gray-500">{c.category} • {c.transmission} • {c.seats} seat • Stok {c.qty}</div>
                   <div className="font-bold leading-tight mt-1">{c.name}</div>
@@ -310,12 +369,12 @@ export default function Admin(){
             <h2 className="font-bold">Blog Kuliner ({posts.length})</h2>
             <button onClick={()=>{setEditingPost(null); setBlogForm({title:"", excerpt:"", content:"<p>Konten kuliner...</p>", cover:"/images/blog-sate.jpg", author:"MASHUDI Kuliner", tags:"kuliner, pekanbaru", category:"Kuliner"});}} className="px-5 py-2.5 rounded-full bg-red-600 text-white text-sm font-bold hover:bg-red-700">+ Tulis / Preview</button>
           </div>
-          <div className="mt-4 bg-white border rounded-2xl p-5 shadow-sm grid gap-3">
+          <div className="mt-4 bg-white border rounded-2xl p-5 grid gap-3">
             <input placeholder="Judul" value={blogForm.title||""} onChange={e=>setBlogForm({...blogForm, title:e.target.value})} className="border rounded-xl px-3 py-2" />
             <input placeholder="Excerpt (ringkas)" value={blogForm.excerpt||""} onChange={e=>setBlogForm({...blogForm, excerpt:e.target.value})} className="border rounded-xl px-3 py-2" />
             <input placeholder="Cover URL atau upload via /public/images (mis /images/blog-sate.jpg)" value={blogForm.cover||""} onChange={e=>setBlogForm({...blogForm, cover:e.target.value})} className="border rounded-xl px-3 py-2 text-sm" />
             <input type="file" accept="image/*" onChange={async e=>{ const f=e.target.files?.[0]; if(!f) return; const fd=new FormData(); fd.append("file",f); const r=await fetch("/api/admin/upload",{method:"POST", body:fd}); if(r.ok){ const j=await r.json(); setBlogForm((p:any)=>({...p, cover:j.url})); } }} className="text-sm" />
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <input placeholder="Kategori" value={blogForm.category||""} onChange={e=>setBlogForm({...blogForm, category:e.target.value})} className="border rounded-xl px-3 py-2" />
               <input placeholder="Tags koma" value={blogForm.tags||""} onChange={e=>setBlogForm({...blogForm, tags:e.target.value})} className="border rounded-xl px-3 py-2" />
             </div>
@@ -328,8 +387,8 @@ export default function Admin(){
           </div>
           <div className="mt-4 grid sm:grid-cols-2 gap-4">
             {posts.map((post:any)=>(
-              <div key={post.id} className="bg-white border rounded-2xl overflow-hidden shadow-sm">
-                <img src={post.cover} alt={post.title} className="h-36 w-full object-cover" />
+              <div key={post.id} className="bg-white border rounded-2xl overflow-hidden">
+                <img loading="lazy" decoding="async" src={post.cover} alt={post.title} className="h-36 w-full object-cover" />
                 <div className="p-4">
                   <div className="text-xs text-red-600 font-bold tracking-widest">{post.category}</div>
                   <div className="font-bold leading-tight mt-1">{post.title}</div>
@@ -349,21 +408,21 @@ export default function Admin(){
       {tab==="banner" && (
         <div className="mt-6">
           <h2 className="font-bold">Banner Popup Iklan Rental (Custom & Ratio)</h2>
-          <p className="text-xs text-gray-500">Pop-up muncul di semua halaman (delay 1.2s, sekali per session). Atur judul, gambar, CTA, link, dan rasio (16/9, 4/3, 1/1, 9/16). Aktif/nonaktif per banner.</p>
-          <div className="mt-4 bg-white border rounded-2xl p-5 shadow-sm grid gap-3">
+          <p className="text-xs text-gray-500">Banner ini tampil <b>di dekat daftar mobil di home</b> (di atas katalog) + popup 10 detik. Toggle <b>Aktif</b> ada di tiap banner di bawah — bukan cuma di form.</p>
+          <div className="mt-4 bg-white border rounded-2xl p-5 grid gap-3">
             <input placeholder="Judul (mis: Sewa Avanza 350K/hari!)" value={bannerForm.title||""} onChange={e=>setBannerForm({...bannerForm, title:e.target.value})} className="border rounded-xl px-3 py-2" />
             <input placeholder="Subtitle" value={bannerForm.subtitle||""} onChange={e=>setBannerForm({...bannerForm, subtitle:e.target.value})} className="border rounded-xl px-3 py-2" />
             <input placeholder="Image URL (/images/banner-rental.jpg)" value={bannerForm.image||""} onChange={e=>setBannerForm({...bannerForm, image:e.target.value})} className="border rounded-xl px-3 py-2 text-sm" />
             <input type="file" accept="image/*" onChange={async e=>{ const f=e.target.files?.[0]; if(!f) return; const fd=new FormData(); fd.append("file",f); const r=await fetch("/api/admin/upload",{method:"POST", body:fd}); if(r.ok){ const j=await r.json(); setBannerForm((p:any)=>({...p, image:j.url})); } }} className="text-sm" />
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <input placeholder="CTA Text" value={bannerForm.ctaText||""} onChange={e=>setBannerForm({...bannerForm, ctaText:e.target.value})} className="border rounded-xl px-3 py-2" />
               <input placeholder="CTA Link (/#katalog)" value={bannerForm.ctaLink||""} onChange={e=>setBannerForm({...bannerForm, ctaLink:e.target.value})} className="border rounded-xl px-3 py-2" />
               <select value={bannerForm.aspect||"16/9"} onChange={e=>setBannerForm({...bannerForm, aspect:e.target.value})} className="border rounded-xl px-3 py-2 bg-white">
                 <option>16/9</option><option>4/3</option><option>1/1</option><option>9/16</option><option>21/9</option>
               </select>
             </div>
-            <label className="text-sm flex items-center gap-2"><input type="checkbox" checked={bannerForm.active!==false} onChange={e=>setBannerForm({...bannerForm, active:e.target.checked})} /> Aktif</label>
-            {bannerForm.image && <div style={{aspectRatio: (bannerForm.aspect||"16/9").replace("/"," / ") as any}} className="w-full max-w-md border rounded-xl overflow-hidden bg-gray-100"><img src={bannerForm.image} alt="preview" className="w-full h-full object-cover" /></div>}
+            <label className="text-sm flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2"><input type="checkbox" checked={bannerForm.active!==false} onChange={e=>setBannerForm({...bannerForm, active:e.target.checked})} /> <span><b>Aktif</b> — tampil di dekat armada & popup (uncheck = sembunyi)</span></label>
+            {bannerForm.image && <div style={{aspectRatio: (bannerForm.aspect||"16/9").replace("/"," / ") as any}} className="w-full max-w-md border rounded-xl overflow-hidden bg-gray-100"><img loading="lazy" decoding="async" src={bannerForm.image} alt="preview" className="w-full h-full object-cover" /></div>}
             <div className="flex gap-2">
               <button onClick={saveBanner} className="flex-1 py-3 rounded-full bg-red-600 text-white font-bold">{editingBanner?"Update":"Tambah"} Banner</button>
               {editingBanner && <button onClick={()=>{setEditingBanner(null); setBannerForm({})}} className="px-6 py-3 rounded-full border font-semibold">Batal Edit</button>}
@@ -371,14 +430,15 @@ export default function Admin(){
           </div>
           <div className="mt-4 grid gap-3">
             {banners.map((b:any)=>(
-              <div key={b.id} className="bg-white border rounded-2xl p-4 flex gap-4 items-center shadow-sm">
-                <img src={b.image} alt={b.title} style={{aspectRatio: b.aspect.replace("/"," / ") as any}} className="w-32 object-cover rounded-xl border" />
+              <div key={b.id} className="bg-white border rounded-2xl p-4 flex gap-4 items-center">
+                <img loading="lazy" decoding="async" src={b.image} alt={b.title} style={{aspectRatio: b.aspect.replace("/"," / ") as any}} className="w-32 object-cover rounded-xl border" />
                 <div className="flex-1">
                   <div className="font-bold leading-tight">{b.title}</div>
                   <div className="text-xs text-gray-500">{b.subtitle} • {b.aspect} • {b.active?"Aktif":"Nonaktif"}</div>
                   <div className="text-xs text-gray-400">{b.ctaText} → {b.ctaLink}</div>
                 </div>
                 <div className="flex flex-col gap-1">
+                  <button onClick={()=>toggleBannerActive(b.id, b.active)} className={`px-4 py-1.5 rounded-full text-xs font-bold border ${b.active?"bg-green-600 text-white border-green-600":"bg-gray-100 text-gray-600"}`}>{b.active?"Aktif ✓":"Nonaktif"}</button>
                   <button onClick={()=>{setEditingBanner(b); setBannerForm(b)}} className="px-4 py-1.5 rounded-full border text-xs font-semibold">Edit</button>
                   <button onClick={()=>deleteBanner(b.id)} className="px-4 py-1.5 rounded-full bg-red-50 text-red-600 border border-red-200 text-xs font-semibold">Hapus</button>
                 </div>
@@ -388,8 +448,9 @@ export default function Admin(){
         </div>
       )}
 
-      {tab==="akun" && (
-        <div className="mt-6 max-w-lg bg-white border rounded-2xl p-6 shadow-sm">
+      
+            {tab==="akun" && (
+        <div className="mt-6 max-w-lg bg-white border rounded-2xl p-4 sm:p-6">
           <h2 className="font-bold">Ganti Username & Password</h2>
           <p className="text-xs text-gray-500 mt-1">Hash scrypt lokal di data/admin.json • Middleware proteksi /api/admin/* tetap aktif • QRIS manual</p>
           <div className="mt-4 grid gap-3">
@@ -405,19 +466,34 @@ export default function Admin(){
         </div>
       )}
 
-      {showCarModal && (
+      
+      {confirm.open && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50" onClick={()=>setConfirm(s=>({...s, open:false}))}>
+          <div onClick={e=>e.stopPropagation()} className="bg-white rounded-2xl p-6 w-full max-w-sm border">
+            <div className={`w-10 h-10 rounded-full grid place-items-center text-white font-black ${confirm.variant==="danger"?"bg-red-600":"bg-amber-500"}`}>{confirm.variant==="danger"?"!":"?"}</div>
+            <h3 className="font-black text-lg mt-3">{confirm.title}</h3>
+            <p className="text-sm text-gray-600 mt-1">{confirm.message}</p>
+            <div className="mt-6 flex gap-2">
+              <button onClick={()=>setConfirm(s=>({...s, open:false}))} className="flex-1 py-3 rounded-full border font-semibold hover:bg-gray-50">Batal</button>
+              <button onClick={confirm.onConfirm} className={`flex-1 py-3 rounded-full font-bold text-white ${confirm.variant==="danger"?"bg-red-600 hover:bg-red-700":"bg-gray-900 hover:bg-black"}`}>Ya, Hapus</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+{showCarModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-lg max-h-[90vh] overflow-auto">
+          <div className="bg-white rounded-2xl p-4 sm:p-6 w-full max-w-lg max-h-[90vh] overflow-auto mx-4 sm:mx-0">
             <h3 className="font-black text-lg">{editingCar? "Edit Armada":"Tambah Armada"}</h3>
             <p className="text-xs text-gray-500">QRIS manual aktif • gambar disimpan di public/images</p>
             <div className="mt-4 grid gap-3">
               <input placeholder="Nama mobil (Toyota Avanza 2023)" value={form.name||""} onChange={e=>setForm({...form, name:e.target.value})} className="border rounded-xl px-3 py-2" />
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 <select value={form.category} onChange={e=>setForm({...form, category:e.target.value})} className="border rounded-xl px-3 py-2 bg-white"><option>MPV</option><option>SUV</option><option>HIACE</option><option>HATCHBACK</option><option>SEDAN</option></select>
                 <select value={form.transmission} onChange={e=>setForm({...form, transmission:e.target.value})} className="border rounded-xl px-3 py-2 bg-white"><option>AT</option><option>MT</option></select>
                 <input type="number" placeholder="Seats" value={form.seats} onChange={e=>setForm({...form, seats:e.target.value})} className="border rounded-xl px-3 py-2" />
               </div>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 <input type="number" placeholder="Harga/hari" value={form.pricePerDay} onChange={e=>setForm({...form, pricePerDay:e.target.value})} className="border rounded-xl px-3 py-2" />
                 <input type="number" placeholder="Fee supir/hari" value={form.driverFeePerDay} onChange={e=>setForm({...form, driverFeePerDay:e.target.value})} className="border rounded-xl px-3 py-2" />
                 <input type="number" placeholder="Stok qty" value={form.qty} onChange={e=>setForm({...form, qty:e.target.value})} className="border rounded-xl px-3 py-2" />
@@ -433,7 +509,7 @@ export default function Admin(){
                   setForm((prev:any)=> ({...prev, images:[url, ...(prev.images||[])].slice(0,4)}));
                 }} className="mt-1 w-full text-sm" />
                 {uploading && <div className="text-xs text-red-600">Uploading...</div>}
-                {form.images?.length>0 && <div className="mt-2 flex gap-2 flex-wrap">{form.images.map((u:string,i:number)=><img key={i} src={u} alt="" className="w-20 h-14 object-cover rounded-lg border" />)}</div>}
+                {form.images?.length>0 && <div className="mt-2 flex gap-2 flex-wrap">{form.images.map((u:string,i:number)=><img loading="lazy" decoding="async" key={i} src={u} alt="" className="w-20 h-14 object-cover rounded-lg border" />)}</div>}
                 <input placeholder="Atau paste URL gambar" value={form.images?.[0]||""} onChange={e=>setForm({...form, images:[e.target.value]})} className="mt-2 border rounded-xl px-3 py-2 w-full text-sm" />
               </div>
               <div className="flex gap-2 mt-2">

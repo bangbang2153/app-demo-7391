@@ -107,3 +107,10 @@ model Banner {
   position  String   @default("popup")
   createdAt DateTime @default(now())
 }
+
+model AppSettings {
+  id         String  @id @default("global")
+  waNumber   String  @default("6283123768532")
+  waTemplate String  @default("Halo Mashudi Transport, mau sewa {car} tgl {start} s/d {end} ({mode}). Total Rp {total}. Bisa nego?")
+  updatedAt  DateTime @updatedAt
+}
