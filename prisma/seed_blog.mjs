@@ -1,0 +1,20 @@
+import { PrismaClient } from "@prisma/client";
+const p=new PrismaClient();
+async function main(){
+  const posts=[
+    {slug:"sate-padang-pekanbaru",title:"Sate Padang Pekanbaru: Gurih Kuah Kental di Dekat Pasar Bawah",excerpt:"Rekomendasi warung sate Padang terenak di Pekanbaru — kuah kental, daging empuk, harga 25–35rb. Cocok mampir habis rental.",content:"<p>Pekanbaru terkenal dengan <b>Sate Padang</b> kuah kental pedas. Rekomendasi: <b>Sate Padang Ajo Laweh</b> di Jl. Riau (25k/porsi), buka 16.00–23.00. Daging sapi empuk, lontong pulen, kerupuk jangek renyah. Tips: pesan lontong extra kalau rombongan 4–6 orang — pas sewa Avanza seharian.</p><p>Alternatif: <b>Sate Padang Mak Syukur</b> dekat Sukajadi, porsi jumbo 35k. Bawa keluarga? Rental Hiace 15 seat + mampir kuliner = efisien.</p>",cover:"/images/blog-sate.jpg",tags:["sate","padang","kuliner"],category:"Kuliner"},
+    {slug:"mie-sagu-kepulauan",title:"Mie Sagu Kepulauan Riau: Kenyal & Asam Pedas, Wajib Coba!",excerpt:"Mie sagu kenyal khas Riau — kuah laksa, topping teri & daun kesum. Ada di Jl. Hang Tuah, porsi besar untuk 2 orang.",content:"<p><b>Mie Sagu</b> adalah kuliner Melayu Riau dari sagu. Tekstur kenyal, kuah asam pedas laksa, topping udang & teri. Coba di <b>Kedai Mie Sagu Riau</b> Jl. Hang Tuah (28k). Porsi besar bisa share berdua.</p><p>Pas sewa mobil harian, rute kuliner mie sagu → es kelapa muda → Masjid Agung An-Nur cocok untuk 1 hari city tour.</p>",cover:"/images/blog-mie-sagu.jpg",tags:["mie sagu","melayu"],category:"Kuliner"},
+    {slug:"gulai-belacan-ikan-patin",title:"Gulai Belacan Ikan Patin: Juara Kuliner Sungai Siak",excerpt:"Gulai ikan patin kuah santan-belacan, daging lembut tanpa bau lumpur. Best di RM Patin Hj. Yunus, Pekanbaru.",content:"<p><b>Gulai Belacan Patin</b> — ikan patin sungai Siak dimasak santan + belacan, aroma smoky. RM <b>Patin Hj. Yunus</b> di Jl. Kaharuddin Nasution (45k/porsi) jadi favorit keluarga. Daging tebal, kuah bisa nambah nasi.</p><p>Pakai <b>Innova Reborn</b> sewa harian buat keluarga 7 orang, parkir luas, langsung lanjut ke wisata Sungai Siak.</p>",cover:"/images/blog-patin.jpg",tags:["patin","gulai"],category:"Kuliner"},
+    {slug:"kopi-kimteng-pekanbaru",title:"Kopi Kimteng Pekanbaru: Kopi Legendaris Sejak 1945",excerpt:"Kopi hitam pekat + roti bakar srikaya di Kedai Kopi Kim Teng, Jl. Senapelan. Antri panjang tiap pagi, worth it.",content:"<p><b>Kopi Kim Teng</b> (1945) adalah ikon kopi Pekanbaru. Kopi O pekat + roti bakar srikaya (22k set). Buka 06.00–11.00, antri tapi cepat saji. Aroma arang, biji robusta lokal.</p><p>Start pagi dengan kopi Kim Teng → lanjut city tour naik <b>Brio</b> irit kota. Parkir depan kedai sempit, jadi pakai hatchback kecil paling pas.</p>",cover:"/images/blog-kopi.jpg",tags:["kopi","kimteng"],category:"Kopi"},
+    {slug:"es-durian-rumbai",title:"Es Durian Rumbai: Segar Manis, Durian Montong Asli",excerpt:"Es durian Montong + es serut + susu kental — segar pas cuaca Pekanbaru 34°C. Ada di Jl. Rumbai.",content:"<p><b>Es Durian Rumbai</b> — durian Montong asli + es serut + susu. Harga 30k. Lokasi di Jl. Rumbai dekat SPBU, buka siang–malam. Cocok buat penutup tour kuliner sore.</p><p>Rental <b>Xpander</b> buat 7 orang, bagasi muat durian bawa pulang (bungkus rapat!).</p>",cover:"/images/blog-durian.jpg",tags:["durian","es"],category:"Dessert"},
+  ];
+  for(const post of posts){ await p.blogPost.upsert({where:{slug:post.slug}, update: post, create: post}); }
+  console.log("blog", await p.blogPost.count());
+  const banner = {title:"Sewa Mobil Pekanbaru — Harian & Dengan Supir", subtitle:"Avanza 350K/hari • Hiace 1.2jt — Nego via WA 0831-2376-8532", image:"/images/banner-rental.jpg", ctaText:"Lihat Armada", ctaLink:"/#katalog", aspect:"16/9", active:true, position:"popup"};
+  // use title as unique fake
+  const exist = await p.banner.findFirst({where:{title:banner.title}});
+  if(!exist) await p.banner.create({data: banner});
+  else await p.banner.update({where:{id:exist.id}, data: banner});
+  console.log("banner", await p.banner.count());
+}
+main().catch(e=>{console.error(e); process.exit(1)}).finally(()=>p.$disconnect());

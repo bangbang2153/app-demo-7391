@@ -1,0 +1,109 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Car {
+  id              String    @id @default(cuid())
+  slug            String    @unique
+  name            String
+  category        String
+  transmission    String
+  seats           Int
+  pricePerDay     Int
+  driverFeePerDay Int       @default(150000)
+  qty             Int       @default(1)
+  images          String[]
+  features        String[]
+  requirements    String[]  @default([])
+  status          String    @default("active")
+  bookings        Booking[]
+}
+
+model Booking {
+  id        String   @id @default(cuid())
+  carId     String
+  car       Car      @relation(fields: [carId], references: [id])
+  userId    String?
+  name      String
+  wa        String
+  email     String?
+  startDate DateTime
+  endDate   DateTime
+  mode      String
+  total     Int
+  payMethod String?
+  payStatus String   @default("pending")
+  status    String   @default("pending")
+  proofUrl  String?
+  couponCode String?
+  createdAt DateTime @default(now())
+
+  @@index([carId, startDate, endDate])
+}
+
+model User {
+  id       String @id @default(cuid())
+  name     String
+  email    String @unique
+  wa       String?
+  password String?
+  role     String @default("USER")
+}
+
+model Coupon {
+  code       String    @id
+  percent    Int?
+  amount     Int?
+  active     Boolean   @default(true)
+  validUntil DateTime?
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  carId     String
+  userId    String?
+  rating    Int
+  comment   String
+  createdAt DateTime @default(now())
+}
+
+model GlobalRequirements {
+  id        String   @id @default("global")
+  items     String[]
+  updatedAt DateTime @updatedAt
+}
+
+model BlogPost {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  title     String
+  excerpt   String
+  content   String
+  cover     String
+  author    String   @default("MASHUDI Kuliner")
+  tags      String[] @default([])
+  category  String   @default("Kuliner")
+  published Boolean  @default(true)
+  views     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Banner {
+  id        String   @id @default(cuid())
+  title     String
+  subtitle  String?
+  image     String
+  ctaText   String   @default("Sewa Sekarang")
+  ctaLink   String   @default("/#katalog")
+  aspect    String   @default("16/9")
+  active    Boolean  @default(true)
+  position  String   @default("popup")
+  createdAt DateTime @default(now())
+}
