@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { renderWaTemplate } from "@/lib/waTemplate";
+import WaIcon from "@/components/WaIcon";
 
 type Banner = {id:string; title:string; subtitle?:string; image:string; ctaText:string; ctaLink:string; aspect:string};
 
@@ -46,7 +47,7 @@ export default function BannerPopup(){
           {banner.subtitle && <p className="text-sm text-gray-600 mt-1">{banner.subtitle}</p>}
           <div className="mt-4 flex gap-2 items-center">
             <a href={banner.ctaLink} onClick={onClose} className="flex-1 text-center py-3 rounded-full bg-red-600 text-white font-bold">{banner.ctaText}</a>
-            <a href={`https://wa.me/${waNumber}?text=${encodeURIComponent(waText)}`} target="_blank" className="px-5 py-3 rounded-full border font-semibold text-sm">WA</a>
+            <a href={`https://wa.me/${waNumber}?text=${encodeURIComponent(waText)}`} target="_blank" className="px-5 py-3 rounded-full border font-semibold text-sm inline-flex items-center gap-1"><WaIcon className="w-4 h-4" /></a>
           </div>
           <div className="mt-3 flex items-center justify-between">
             <span className="text-xs text-gray-400">Rasio: {ratio} • 10 detik setelah masuk</span>

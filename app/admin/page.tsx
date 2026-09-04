@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import type { Car } from "@/lib/cars";
 import { renderWaTemplate } from "@/lib/waTemplate";
+import WaIcon from "@/components/WaIcon";
 
 type B = {id:string; carId:string; carName:string; name:string; wa:string; start:string; end:string; mode:string; total:number; payOption:string; status:string; payStatus?:string; proofUrl?:string; createdAt:string};
 
@@ -27,6 +28,7 @@ export default function Admin(){
   const [posts,setPosts]=useState<any[]>([]); const [banners,setBanners]=useState<any[]>([]); const [blogForm,setBlogForm]=useState<any>({}); const [bannerForm,setBannerForm]=useState<any>({}); const [editingPost,setEditingPost]=useState<any>(null); const [editingBanner,setEditingBanner]=useState<any>(null);
   const [globalReq,setGlobalReq]=useState<string>("KTP, SIM A, Deposit / Jaminan"); const [globalMsg,setGlobalMsg]=useState("");
   const [waNumber,setWaNumber]=useState("6283123768532"); const [waTemplate,setWaTemplate]=useState("Halo Mashudi Transport, mau sewa (car) tgl (start) s/d (end) (mode). Total Rp (total). Bisa nego?"); const [waMsg,setWaMsg]=useState("");
+  const [bulkMsg,setBulkMsg]=useState(""); const [bulkLoading,setBulkLoading]=useState(false); const [bulkPreview,setBulkPreview]=useState<any[]>([]);
 
   function checkAuth(){ setAuthed(getCookie("mashudi_admin")==="mashudi-admin-v1"); }
   useEffect(()=>{ checkAuth(); if(getCookie("mashudi_admin")==="mashudi-admin-v1"){ load(); loadCars(); loadGlobalReq(); loadPosts(); loadBanners(); loadWaSettings(); } },[]);
@@ -195,6 +197,42 @@ export default function Admin(){
     setGlobalMsg(bulk? `Berhasil terapkan ke semua armada (${items.join(", ")})` : `Tersimpan global (${items.join(", ")})`);
     if(bulk) loadCars();
   }
+  function handleBulkFile(e:any){
+    const f=e.target.files?.[0]; if(!f) return;
+    const reader=new FileReader();
+    reader.onload=()=>{
+      try{
+        const j=JSON.parse(String(reader.result||""));
+        const arr = Array.isArray(j) ? j : (Array.isArray(j.cars)? j.cars : (Array.isArray(j.data)? j.data : []));
+        if(!arr.length) { setBulkMsg("JSON kosong — isi array [{name: ...}]"); setBulkPreview([]); return; }
+        // validate preview: only name required, max 50
+        const preview = arr.slice(0,50).map((r:any,i:number)=>({idx:i+1, name:String(r.name||r.nama||"").trim()||"(tanpa nama)", raw:r}));
+        setBulkPreview(preview);
+        setBulkMsg(preview.length+" data siap — cek nama dulu, klik Upload Bulk.");
+      }catch(err:any){ setBulkMsg("JSON tidak valid: "+err.message); setBulkPreview([]); }
+    };
+    reader.readAsText(f);
+  }
+  async function doBulkUpload(){
+    if(!bulkPreview.length) return;
+    setBulkLoading(true); setBulkMsg("");
+    try{
+      const payload = bulkPreview.map(p=>p.raw);
+      const r=await fetch("/api/admin/cars/bulk",{method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(payload)});
+      const j=await r.json();
+      if(!r.ok){ setBulkMsg(j.error||"Gagal bulk"); setBulkLoading(false); return; }
+      setBulkMsg(`Sukses ${j.created} mobil — ${j.skipped?.length||0} dilewati. Klik kartu untuk edit gambar.`);
+      setBulkPreview([]); loadCars();
+      // reset file input
+      const el=document.getElementById("bulk-file") as HTMLInputElement|null; if(el) el.value="";
+    }catch(e:any){ setBulkMsg("Error: "+e.message); }
+    setBulkLoading(false);
+  }
+  function downloadBulkExample(){
+    const ex=[{name:"Toyota Raize 2024", category:"SUV", transmission:"AT", seats:5, pricePerDay:450000, qty:1, features:["Turbo","Irit"], requirements:["KTP","SIM A","Deposit"]},{name:"Honda HR-V 2023", category:"SUV", transmission:"AT", seats:5, pricePerDay:500000, qty:1},{name:"Daihatsu Ayla 2023", category:"HATCHBACK", transmission:"MT", seats:5, pricePerDay:280000}];
+    const blob=new Blob([JSON.stringify(ex,null,2)],{type:"application/json"});
+    const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download="bulk-mobil-example.json"; a.click(); URL.revokeObjectURL(url);
+  }
 
   const filtered = bookings.filter(b=> filter==="Semua" ? true : b.status===filter.toLowerCase());
   const income = bookings.filter(b=>["paid","confirmed","dp_paid"].includes((b.payStatus||b.status))).reduce((s,b)=>s+b.total,0);
@@ -307,7 +345,7 @@ export default function Admin(){
                         <button onClick={()=>updateBooking(b.id,"paid")} className="px-2.5 py-1 rounded-full bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700">Paid</button>
                         <button onClick={()=>updateBooking(b.id,"cancelled")} className="px-2.5 py-1 rounded-full bg-gray-200 text-gray-700 text-xs font-semibold">Cancel</button>
                         <button onClick={()=>deleteBooking(b.id)} className="px-2.5 py-1 rounded-full border text-xs font-semibold hover:bg-red-50">Hapus</button>
-                        <a href={`https://wa.me/${b.wa.replace(/^0/,"62")}?text=${encodeURIComponent(`Halo ${b.name}, booking ${b.carName} tgl ${b.start} s/d ${b.end} kami konfirmasi. Pembayaran ${b.payOption} — QRIS/transfer sudah kami terima. Terima kasih - Mashudi Transport`)}`} target="_blank" className="px-2.5 py-1 rounded-full border text-xs font-semibold hover:bg-gray-50">WA</a>
+                        <a href={`https://wa.me/${b.wa.replace(/^0/,"62")}?text=${encodeURIComponent(`Halo ${b.name}, booking ${b.carName} tgl ${b.start} s/d ${b.end} kami konfirmasi. Pembayaran ${b.payOption} — QRIS/transfer sudah kami terima. Terima kasih - Mashudi Transport`)}`} target="_blank" className="px-2.5 py-1 rounded-full border text-xs font-semibold hover:bg-gray-50 inline-flex items-center gap-1"><WaIcon className="w-3.5 h-3.5" /></a>
                       </div>
                     </td>
                   </tr>
@@ -333,6 +371,25 @@ export default function Admin(){
             </div>
             {globalMsg && <div className="mt-2 text-xs p-2 rounded-xl bg-amber-50 border border-amber-200 text-amber-800">{globalMsg}</div>}
             <div className="mt-2 text-xs text-gray-400">Per-mobil: klik kartu → field Persyaratan → Simpan (hanya mobil itu yang berubah)</div>
+          </div>
+          <div className="bg-white border rounded-2xl p-5 mb-4">
+            <h3 className="font-bold">Bulk Add Armada (JSON)</h3>
+            <p className="text-xs text-gray-500 mt-1">Upload file .json berisi array mobil — cukup <b>name</b> wajib, lainnya default. Setelah masuk, klik kartu untuk edit gambar/fitur/harga.</p>
+            <div className="mt-3 flex flex-col sm:flex-row gap-2">
+              <input id="bulk-file" type="file" accept=".json,application/json" onChange={handleBulkFile} className="flex-1 text-sm border rounded-xl px-3 py-2 bg-white" />
+              <button onClick={downloadBulkExample} className="px-4 py-2 rounded-full border text-sm font-semibold hover:bg-gray-50 shrink-0">Download Contoh JSON</button>
+            </div>
+            {bulkPreview.length>0 && (
+              <div className="mt-3">
+                <div className="text-xs font-semibold">Preview {bulkPreview.length} mobil:</div>
+                <div className="mt-2 max-h-40 overflow-auto border rounded-xl divide-y text-sm">
+                  {bulkPreview.map((b:any)=><div key={b.idx} className="px-3 py-2 flex justify-between gap-2"><span className="font-medium truncate">{b.idx}. {b.name}</span><span className="text-xs text-gray-400 truncate">{b.raw.category||"MPV"} • Rp {(b.raw.pricePerDay||350000).toLocaleString("id-ID")}</span></div>)}
+                </div>
+                <button onClick={doBulkUpload} disabled={bulkLoading} className="mt-3 w-full py-2.5 rounded-full bg-red-600 text-white font-bold disabled:opacity-50">{bulkLoading?"Uploading...":`Upload Bulk (${bulkPreview.length})`}</button>
+              </div>
+            )}
+            {bulkMsg && <div className="mt-2 text-xs p-2 rounded-xl bg-amber-50 border border-amber-200 text-amber-800">{bulkMsg}</div>}
+            <div className="mt-2 text-xs text-gray-400">Format: <code>[{`{"name":"Avanza"}`}, ...]</code> atau <code>{`{"cars":[...]}`}</code> — maks 50 per upload.</div>
           </div>
           <div className="flex justify-between items-center">
             <h2 className="font-bold">Armada ({cars.length}) — klik kartu untuk edit</h2>

@@ -2,6 +2,7 @@
 import { useState, useMemo, useEffect } from "react";
 import type { Car } from "@/lib/cars";
 import CustomSelect from "@/components/CustomSelect";
+import WaIcon from "@/components/WaIcon";
 import { renderWaTemplate } from "@/lib/waTemplate";
 
 export default function BookingPage(){
@@ -89,14 +90,14 @@ export default function BookingPage(){
         </div>
         {days>0 && <div className="text-sm bg-gray-50 p-3 rounded-xl"> {days} hari = <b>Rp {totalVal.toLocaleString("id-ID")}</b> {pay==="DP 30%" && <span className="text-red-600"> • DP Rp {Math.round(totalVal*0.3).toLocaleString("id-ID")}</span>}</div>}
         <input placeholder="Nama" value={name} onChange={e=>setName(e.target.value)} className="border rounded-xl px-3 py-2" />
-        <input placeholder="No WA (08...)" value={wa} onChange={e=>setWa(e.target.value)} className="border rounded-xl px-3 py-2" />
+        <input placeholder="Nomor WhatsApp" value={wa} onChange={e=>setWa(e.target.value)} className="border rounded-xl px-3 py-2" />
         <div className="flex gap-2 text-sm">
           <button onClick={()=>setPay("DP 30%")} className={`flex-1 py-2 rounded-full border font-semibold ${pay==="DP 30%"?"bg-red-600 text-white border-red-600":""}`}>DP 30%</button>
           <button onClick={()=>setPay("FULL")} className={`flex-1 py-2 rounded-full border font-semibold ${pay==="FULL"?"bg-red-600 text-white border-red-600":""}`}>Bayar Full</button>
         </div>
-        <div className="text-xs bg-red-50 border border-red-200 rounded-xl p-3">Pembayaran manual: <b>QRIS / Transfer</b> — info dikirim via WA setelah booking.</div>
+        <div className="text-xs bg-red-50 border border-red-200 rounded-xl p-3">Pembayaran manual: <b>QRIS / Transfer</b> — info dikirim via WhatsApp setelah booking.</div>
         <button onClick={submit} disabled={loading} className="py-3 rounded-full bg-red-600 text-white font-bold disabled:opacity-50">{loading?"...":"Booking Sekarang"}</button>
-        <a href={waLink()} target="_blank" className="text-center py-3 rounded-full border font-semibold">Nego via WA (custom)</a>
+        <a href={waLink()} target="_blank" className="text-center py-3 rounded-full border font-semibold inline-flex items-center justify-center gap-2"><WaIcon className="w-5 h-5" /> Chat</a>
         {msg && <div className="text-sm p-3 bg-red-50 border border-red-200 rounded-xl">{msg}</div>}
       </div>
     </div>

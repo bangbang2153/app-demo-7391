@@ -2,6 +2,7 @@
 import { useState, useMemo, useEffect } from "react";
 import type { Car } from "@/lib/cars";
 import { renderWaTemplate } from "@/lib/waTemplate";
+import WaIcon from "@/components/WaIcon";
 
 function waLink(number:string, template:string, car:string, start:string, end:string, mode:string, total:number){
   const txt = renderWaTemplate(template, {car, start, end, mode, total: total.toLocaleString("id-ID")});
@@ -47,7 +48,7 @@ export default function Home(){
             <a href="#katalog" className="px-6 py-3 rounded-full bg-white text-red-600 font-bold text-sm">Lihat Armada</a>
             <a href="/blog" className="px-6 py-3 rounded-full bg-black/20 border border-white/30 font-semibold text-sm">Kuliner Pekanbaru →</a>
           </div>
-          <div className="mt-4 text-xs text-white/80">Durasi harian • kalau butuh jam/bulanan, nego WA</div>
+          <div className="mt-4 text-xs text-white/80">Durasi harian • kalau butuh jam/bulanan, nego WhatsApp</div>
         </div>
       </section>
 
@@ -72,7 +73,7 @@ export default function Home(){
               {banner.subtitle && <div className="text-sm text-gray-600">{banner.subtitle}</div>}
               <div className="flex gap-2 mt-1">
                 <a href={banner.ctaLink} className="px-5 py-2 rounded-full bg-red-600 text-white font-bold text-sm text-center">{banner.ctaText}</a>
-                <a href={waLink(waNumber, waTemplate, banner.title,"...","...", "LEPAS_KUNCI", 350000)} target="_blank" className="px-5 py-2 rounded-full border font-bold text-sm text-center">WA</a>
+                <a href={waLink(waNumber, waTemplate, banner.title,"...","...", "LEPAS_KUNCI", 350000)} target="_blank" className="px-5 py-2 rounded-full border font-bold text-sm text-center inline-flex items-center justify-center gap-1"><WaIcon className="w-4 h-4" /></a>
               </div>
               <div className="text-xs text-gray-400">Rasio {banner.aspect}</div>
             </div>
@@ -106,9 +107,9 @@ export default function Home(){
                 <div className="text-xs text-gray-500">+ supir Rp {c.driverFeePerDay.toLocaleString("id-ID")}/hari</div>
                 <div className="mt-3 flex gap-2" onClick={e=>e.preventDefault()}>
                   <span onClick={e=>{e.preventDefault(); window.location.href=`/booking?car=${c.slug}`;}} className="flex-1 text-center px-4 py-2 rounded-full bg-red-600 text-white font-semibold cursor-pointer block text-sm">Booking</span>
-                  <a href={waLink(waNumber, waTemplate, c.name,"...","...", "LEPAS_KUNCI", c.pricePerDay)} target="_blank" onClick={e=>e.stopPropagation()} className="px-4 py-2 rounded-full border font-semibold text-sm">WA</a>
+                  <a href={waLink(waNumber, waTemplate, c.name,"...","...", "LEPAS_KUNCI", c.pricePerDay)} target="_blank" onClick={e=>e.stopPropagation()} className="px-4 py-2 rounded-full border font-semibold text-sm inline-flex items-center gap-1"><WaIcon className="w-4 h-4" /></a>
                 </div>
-                <div className="mt-2 text-xs text-gray-400 text-center">Klik kartu untuk detail →</div>
+
               </div>
             </a>
           ))}

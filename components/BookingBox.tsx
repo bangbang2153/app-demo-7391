@@ -2,6 +2,7 @@
 import { useState, useMemo, useEffect } from "react";
 import type { Car } from "@/lib/cars";
 import { calcTotal, daysBetween } from "@/lib/pricing";
+import WaIcon from "@/components/WaIcon";
 import { renderWaTemplate } from "@/lib/waTemplate";
 
 export default function BookingBox({car}:{car:Car}){
@@ -61,15 +62,15 @@ export default function BookingBox({car}:{car:Car}){
         </div>
         {days>0 && <div className="text-sm bg-gray-50 p-3 rounded-xl">{days} hari × Rp {car.pricePerDay.toLocaleString("id-ID")} {withDriver?` + supir Rp ${car.driverFeePerDay.toLocaleString("id-ID")}/hari`:""} = <b>Rp {total.toLocaleString("id-ID")}</b> {pay==="DP 30%" && <span className="text-red-600"> (DP Rp {dp.toLocaleString("id-ID")})</span>}</div>}
         <input placeholder="Nama" value={name} onChange={e=>setName(e.target.value)} className="border rounded-xl px-3 py-2" />
-        <input placeholder="No WA (08...)" value={wa} onChange={e=>setWa(e.target.value)} className="border rounded-xl px-3 py-2" />
+        <input placeholder="Nomor WhatsApp" value={wa} onChange={e=>setWa(e.target.value)} className="border rounded-xl px-3 py-2" />
         <div className="flex gap-2 text-sm">
           <button onClick={()=>setPay("DP 30%")} className={`flex-1 py-2 rounded-full border ${pay==="DP 30%"?"bg-red-600 text-white border-red-600":""}`}>DP 30%</button>
           <button onClick={()=>setPay("FULL")} className={`flex-1 py-2 rounded-full border ${pay==="FULL"?"bg-red-600 text-white border-red-600":""}`}>Bayar Full</button>
         </div>
         <button onClick={submit} disabled={loading} className="w-full py-3 rounded-full bg-red-600 text-white font-bold disabled:opacity-50">{loading?"Memproses...":"Booking Sekarang"}</button>
-        <a href={waLink()} target="_blank" className="text-center py-3 rounded-full border font-semibold">Nego via WA</a>
+        <a href={waLink()} target="_blank" className="text-center py-3 rounded-full border font-semibold inline-flex items-center justify-center gap-2"><WaIcon className="w-5 h-5" /> Chat</a>
         {msg && <div className="text-sm p-3 rounded-xl bg-red-50 border border-red-200">{msg}</div>}
-        <div className="text-xs text-gray-500">Pembayaran: Transfer BCA/BRI/Mandiri atau QRIS (info dikirim WA setelah booking).</div>
+        <div className="text-xs text-gray-500">Pembayaran: Transfer BCA/BRI/Mandiri atau QRIS (info dikirim WhatsApp setelah booking).</div>
       </div>
     </div>
   )

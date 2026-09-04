@@ -2,6 +2,7 @@ import { cars as seedCars } from "@/lib/cars";
 import { notFound } from "next/navigation";
 import BookingBox from "@/components/BookingBox";
 import CarGallery from "@/components/CarGallery";
+import WaIcon from "@/components/WaIcon";
 import { prisma } from "@/lib/prisma";
 
 export async function generateStaticParams(){ return seedCars.map(c=>({slug:c.slug})) }
@@ -32,7 +33,7 @@ export default async function Detail({params}:{params:{slug:string}}){
             <ul className="mt-2 text-sm text-gray-600 list-disc ml-5 space-y-1">
               {reqs.map((r:string)=><li key={r}>{r}</li>)}
               <li>Dengan supir: sudah termasuk driver, BBM & tol ditanggung penyewa.</li>
-              <li>Durasi harian (24 jam), nego jam/bulanan via WA.</li>
+              <li>Durasi harian (24 jam), nego jam/bulanan via WhatsApp.</li>
               <li>QRIS / Transfer manual — upload bukti, admin konfirmasi manual.</li>
             </ul>
           </div>
@@ -44,7 +45,7 @@ export default async function Detail({params}:{params:{slug:string}}){
           <div className="text-sm text-gray-500">Driver + Rp {car.driverFeePerDay.toLocaleString("id-ID")}/hari</div>
           <div className="mt-6"><BookingBox car={car} /></div>
           <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl text-sm">
-            Butuh nego harga/durasi? <a className="font-bold text-red-600" href={`https://wa.me/6283123768532?text=${encodeURIComponent(`Halo Mashudi Transport, mau nego `+car.name)}`} target="_blank">Chat WA 0831-2376-8532 →</a>
+            <span className="inline-flex items-center gap-1.5">Butuh nego harga/durasi? <a className="font-bold text-red-600 inline-flex items-center gap-1" href={`https://wa.me/6283123768532?text=${encodeURIComponent(`Halo Mashudi Transport, mau nego `+car.name)}`} target="_blank"><WaIcon className="w-4 h-4" /> Chat →</a></span>
           </div>
         </div>
       </div>
