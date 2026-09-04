@@ -250,7 +250,6 @@ export default function Admin(){
             <input type="password" placeholder="Password" value={pass} onChange={e=>setPass(e.target.value)} className="border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-red-200" />
             {msg && <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-3 py-2">{msg}</div>}
             <button onClick={login} className="py-3 rounded-full bg-red-600 text-white font-bold hover:bg-red-700">Masuk</button>
-            <div className="text-xs text-gray-400 text-center">Default: admin / mashudi123 — ganti di tab Akun setelah login (tersimpan di data/admin.json)<br/>Middleware aktif: /api/admin/* butuh login</div>
           </div>
         </div>
       </div>
