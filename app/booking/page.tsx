@@ -7,7 +7,7 @@ import { renderWaTemplate } from "@/lib/waTemplate";
 
 export default function BookingPage(){
   const [cars,setCars]=useState<Car[]>([]);
-  const [waNumber,setWaNumber]=useState("6283123768532");
+  const [waNumber,setWaNumber]=useState("6282286906897");
   const [waTemplate,setWaTemplate]=useState("Halo Mashudi Transport, mau sewa (car) tgl (start) s/d (end) (mode). Total Rp (total). Bisa nego?");
   useEffect(()=>{
     fetch("/api/cars").then(r=>r.json()).then(setCars).catch(()=>{});

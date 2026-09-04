@@ -28,7 +28,7 @@ export default function RootLayout({children}:{children:React.ReactNode}){
                 <div className="font-display font-bold text-aspal">MASHUDI TRANSPORT</div>
                 <div>Jl. Kurnia No.4, Tengkerang Labuai, Bukit Raya, Kota Pekanbaru, Riau 28289</div>
                 <div className="flex flex-wrap gap-2 items-center">
-                  <a href="https://www.google.com/maps/search/?api=1&query=Jl.+Kurnia+No.4+Tengkerang+Labuai+Bukit+Raya+Pekanbaru" target="_blank" rel="noopener noreferrer" className="underline">Lihat di Maps</a>
+                  <a href="https://maps.app.goo.gl/JMX4412Xb1WMf9BZ7" target="_blank" rel="noopener noreferrer" className="underline">Lihat di Maps</a>
                   <span>•</span>
                   <span>0822-8690-6897 • Pekanbaru</span>
                 </div>
@@ -36,10 +36,10 @@ export default function RootLayout({children}:{children:React.ReactNode}){
               </div>
               <div className="space-y-2 shrink-0">
                 <div className="text-xs font-semibold tracking-wide text-aspal">Ikuti Kami</div>
-                <div className="flex flex-col gap-2 text-sm">
-                  <a href="https://www.facebook.com/search/top/?q=mashudi%20rent%20car" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 hover:text-bata"><span className="w-7 h-7 rounded-full bg-[#1877F2] text-white grid place-items-center"><FbIcon/></span> Facebook: mashudi rent car</a>
-                  <a href="https://www.instagram.com/mashudi_rental_mobil_pku" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 hover:text-bata"><span className="w-7 h-7 rounded-full bg-gradient-to-br from-[#F58529] via-[#DD2A7B] to-[#515BD4] text-white grid place-items-center"><IgIcon/></span> IG: mashudi rental mobil PKU</a>
-                  <a href="https://www.tiktok.com/@rental_mobil_pekanbaru_mashudi" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 hover:text-bata"><span className="w-7 h-7 rounded-full bg-black text-white grid place-items-center"><TtIcon/></span> TikTok: rental_mobil_pekanbaru_mashudi</a>
+                <div className="flex flex-col gap-2 text-sm text-gray-600">
+                  <span className="inline-flex items-center gap-2"><span className="w-7 h-7 rounded-full bg-[#1877F2] text-white grid place-items-center"><FbIcon/></span> Facebook: mashudi rent car</span>
+                  <span className="inline-flex items-center gap-2"><span className="w-7 h-7 rounded-full bg-gradient-to-br from-[#F58529] via-[#DD2A7B] to-[#515BD4] text-white grid place-items-center"><IgIcon/></span> IG: mashudi rental mobil PKU</span>
+                  <span className="inline-flex items-center gap-2"><span className="w-7 h-7 rounded-full bg-black text-white grid place-items-center"><TtIcon/></span> TikTok: rental_mobil_pekanbaru_mashudi</span>
                 </div>
               </div>
             </div>

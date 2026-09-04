@@ -14,7 +14,7 @@ export default function BookingBox({car}:{car:Car}){
   const [pay,setPay]=useState<"DP 30%"|"FULL">("DP 30%");
   const [loading,setLoading]=useState(false);
   const [msg,setMsg]=useState("");
-  const [waNumber,setWaNumber]=useState("6283123768532");
+  const [waNumber,setWaNumber]=useState("6282286906897");
   const [waTemplate,setWaTemplate]=useState("Halo Mashudi Transport, mau sewa (car) tgl (start) s/d (end) (mode). Total Rp (total). Bisa nego?");
   useEffect(()=>{
     fetch("/api/settings").then(r=>r.json()).then(s=>{

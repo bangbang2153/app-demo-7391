@@ -27,7 +27,7 @@ export default function Admin(){
   const [confirm,setConfirm]=useState<{open:boolean; title:string; message:string; onConfirm:()=>void; variant?: "danger"|"warn"}>({open:false, title:"", message:"", onConfirm:()=>{}});
   const [posts,setPosts]=useState<any[]>([]); const [banners,setBanners]=useState<any[]>([]); const [blogForm,setBlogForm]=useState<any>({}); const [bannerForm,setBannerForm]=useState<any>({}); const [editingPost,setEditingPost]=useState<any>(null); const [editingBanner,setEditingBanner]=useState<any>(null);
   const [globalReq,setGlobalReq]=useState<string>("KTP, SIM A, Deposit / Jaminan"); const [globalMsg,setGlobalMsg]=useState("");
-  const [waNumber,setWaNumber]=useState("6283123768532"); const [waTemplate,setWaTemplate]=useState("Halo Mashudi Transport, mau sewa (car) tgl (start) s/d (end) (mode). Total Rp (total). Bisa nego?"); const [waMsg,setWaMsg]=useState("");
+  const [waNumber,setWaNumber]=useState("6282286906897"); const [waTemplate,setWaTemplate]=useState("Halo Mashudi Transport, mau sewa (car) tgl (start) s/d (end) (mode). Total Rp (total). Bisa nego?"); const [waMsg,setWaMsg]=useState("");
   const [bulkMsg,setBulkMsg]=useState(""); const [bulkLoading,setBulkLoading]=useState(false); const [bulkPreview,setBulkPreview]=useState<any[]>([]);
 
   function checkAuth(){ setAuthed(getCookie("mashudi_admin")==="mashudi-admin-v1"); }
@@ -279,7 +279,7 @@ export default function Admin(){
           <h2 className="font-bold">Pengaturan WA & Template Direct</h2>
           <div className="mt-4 grid gap-3">
             <label className="text-sm font-semibold">No WA (format 62..)
-              <input value={waNumber} onChange={e=>setWaNumber(e.target.value)} placeholder="6283123768532" className="mt-1 w-full border rounded-xl px-3 py-2" />
+              <input value={waNumber} onChange={e=>setWaNumber(e.target.value)} placeholder="6282286906897" className="mt-1 w-full border rounded-xl px-3 py-2" />
             </label>
             <label className="text-sm font-semibold">Template WA
               <textarea value={waTemplate} onChange={e=>setWaTemplate(e.target.value)} rows={4} placeholder="Halo Mashudi Transport, mau sewa (car) tgl (start) s/d (end) (mode). Total Rp (total). Bisa nego?" className="mt-1 w-full border rounded-xl px-3 py-2 text-sm" />
@@ -289,7 +289,7 @@ export default function Admin(){
             {waMsg && <div className="text-sm p-3 rounded-xl bg-amber-50 border border-amber-200">{waMsg}</div>}
             <div className="flex flex-col sm:flex-row gap-2">
               <button onClick={saveWaSettings} className="flex-1 py-3 rounded-full bg-red-600 text-white font-bold hover:bg-red-700">Simpan WA</button>
-              <button onClick={()=>{ setWaNumber("6283123768532"); setWaTemplate("Halo Mashudi Transport, mau sewa (car) tgl (start) s/d (end) (mode). Total Rp (total). Bisa nego?"); setWaMsg("Direset ke default — klik Simpan WA untuk menyimpan."); }} className="px-6 py-3 rounded-full border font-bold hover:bg-gray-50 text-sm">Reset Default</button>
+              <button onClick={()=>{ setWaNumber("6282286906897"); setWaTemplate("Halo Mashudi Transport, mau sewa (car) tgl (start) s/d (end) (mode). Total Rp (total). Bisa nego?"); setWaMsg("Direset ke default — klik Simpan WA untuk menyimpan."); }} className="px-6 py-3 rounded-full border font-bold hover:bg-gray-50 text-sm">Reset Default</button>
             </div>
           </div>
         </div>

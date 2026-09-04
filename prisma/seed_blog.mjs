@@ -10,7 +10,7 @@ async function main(){
   ];
   for(const post of posts){ await p.blogPost.upsert({where:{slug:post.slug}, update: post, create: post}); }
   console.log("blog", await p.blogPost.count());
-  const banner = {title:"Sewa Mobil Pekanbaru — Harian & Dengan Supir", subtitle:"Avanza 350K/hari • Hiace 1.2jt — Nego via WA 0831-2376-8532", image:"/images/banner-rental.jpg", ctaText:"Lihat Armada", ctaLink:"/#katalog", aspect:"16/9", active:true, position:"popup"};
+  const banner = {title:"Sewa Mobil Pekanbaru — Harian & Dengan Supir", subtitle:"Avanza 350K/hari • Hiace 1.2jt — Nego via WA 0822-8690-6897", image:"/images/banner-rental.jpg", ctaText:"Lihat Armada", ctaLink:"/#katalog", aspect:"16/9", active:true, position:"popup"};
   // use title as unique fake
   const exist = await p.banner.findFirst({where:{title:banner.title}});
   if(!exist) await p.banner.create({data: banner});

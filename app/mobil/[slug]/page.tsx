@@ -45,7 +45,7 @@ export default async function Detail({params}:{params:{slug:string}}){
           <div className="text-sm text-gray-500">Driver + Rp {car.driverFeePerDay.toLocaleString("id-ID")}/hari</div>
           <div className="mt-6"><BookingBox car={car} /></div>
           <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl text-sm">
-            <span className="inline-flex items-center gap-1.5">Butuh nego harga/durasi? <a className="font-bold text-red-600 inline-flex items-center gap-1" href={`https://wa.me/6283123768532?text=${encodeURIComponent(`Halo Mashudi Transport, mau nego `+car.name)}`} target="_blank"><WaIcon className="w-4 h-4" /> Chat →</a></span>
+            <span className="inline-flex items-center gap-1.5">Butuh nego harga/durasi? <a className="font-bold text-red-600 inline-flex items-center gap-1" href={`https://wa.me/6282286906897?text=${encodeURIComponent(`Halo Mashudi Transport, mau nego `+car.name)}`} target="_blank"><WaIcon className="w-4 h-4" /> Chat →</a></span>
           </div>
         </div>
       </div>

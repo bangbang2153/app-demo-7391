@@ -1,15 +1,17 @@
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Instrument+Sans:wght@400;500;600&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-:root{--bg:#fff}
+:root{--bata:#C1272D; --sawit:#E9A426; --aspal:#1A1E22; --kabin:#EDEEF0; --daun:#1B3329}
 *{text-rendering:optimizeLegibility; min-width:0}
+::selection{background:#E9A426; color:#1A1E22}
 html{scroll-behavior:auto; overflow-x:hidden}
 html,body{max-width:100vw; overflow-x:hidden}
-body{background:#f8fafc;color:#0f172a;-webkit-font-smoothing:antialiased; overflow-x:hidden; word-break:break-word; overflow-wrap:anywhere}
+body{background:#fff;color:#1A1E22;font-family:"Instrument Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased; overflow-x:hidden; word-break:break-word; overflow-wrap:anywhere}
+h1,h2,h3,.font-display{font-family:"Bricolage Grotesque",system-ui,sans-serif; letter-spacing:-0.02em}
+p{max-width:65ch}
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible{outline:2px solid #C1272D; outline-offset:2px}
 img,video{max-width:100%; height:auto}
 *::-webkit-scrollbar{height:6px; width:6px}
 img{content-visibility:auto}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
-.gloss{position:relative; overflow:hidden}
-.gloss::before{content:""; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent); pointer-events:none}
-.gloss::after{content:""; position:absolute; top:0; left:0; right:0; height:45%; background:linear-gradient(to bottom, rgba(255,255,255,.16), transparent); pointer-events:none}

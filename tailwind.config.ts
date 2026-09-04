@@ -4,7 +4,16 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        brand: { 50:"#fef2f2", 100:"#fee2e2", 500:"#ef4444", 600:"#dc2626", 700:"#b91c1c", 900:"#7f1d1d" }
+        bata: "#C1272D",
+        sawit: "#E9A426",
+        aspal: "#1A1E22",
+        kabin: "#EDEEF0",
+        daun: "#1B3329",
+        brand: { 50:"#fef2f2", 100:"#fee2e2", 500:"#C1272D", 600:"#A81F25", 700:"#7f1d1d", 900:"#450a0a" }
+      },
+      fontFamily: {
+        display: ["Bricolage Grotesque","system-ui","sans-serif"],
+        body: ["Instrument Sans","system-ui","sans-serif"],
       }
     },
   },

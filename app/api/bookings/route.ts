@@ -41,7 +41,7 @@ export async function POST(req: NextRequest){
     if(!car) return NextResponse.json({error:"Mobil tidak ditemukan"}, {status:404});
     const existing = await prisma.booking.findMany({where:{carId:car.id, status:{in:["pending","paid","confirmed","dp_paid"]}}});
     const clash = existing.some(b=> isOverlapping(start,end, b.startDate.toISOString().slice(0,10), b.endDate.toISOString().slice(0,10)));
-    if(clash) return NextResponse.json({error:"Tanggal bentrok — mobil sudah dibooking di rentang itu. Coba tanggal lain atau Nego WA 0831-2376-8532"},{status:409});
+    if(clash) return NextResponse.json({error:"Tanggal bentrok — mobil sudah dibooking di rentang itu. Coba tanggal lain atau Nego WA 0822-8690-6897"},{status:409});
     const booking = await prisma.booking.create({
       data:{
         carId:car.id, name, wa, startDate:s, endDate:e, mode, total: Number(total||0),

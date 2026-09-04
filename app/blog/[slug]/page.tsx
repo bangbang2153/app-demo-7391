@@ -22,7 +22,7 @@ export default async function BlogDetail({params}:{params:{slug:string}}){
         <p className="text-sm text-gray-600 mt-1">Sewa Avanza 350K/hari atau Hiace 1.2jt — lepas kunci & dengan supir. Klik Booking, pilih tanggal harian, atau nego via WhatsApp.</p>
         <div className="mt-3 flex gap-2">
           <a href="/#katalog" className="px-5 py-2.5 rounded-full bg-red-600 text-white text-sm font-bold">Lihat Armada</a>
-          <a href={`https://wa.me/6283123768532?text=${encodeURIComponent(`Halo Mashudi, habis baca blog `+post.title+`, mau sewa mobil`)}`} target="_blank" className="px-5 py-2.5 rounded-full border bg-white text-sm font-semibold inline-flex items-center gap-1.5"><WaIcon className="w-4 h-4" /> Chat</a>
+          <a href={`https://wa.me/6282286906897?text=${encodeURIComponent(`Halo Mashudi, habis baca blog `+post.title+`, mau sewa mobil`)}`} target="_blank" className="px-5 py-2.5 rounded-full border bg-white text-sm font-semibold inline-flex items-center gap-1.5"><WaIcon className="w-4 h-4" /> Chat</a>
         </div>
       </div>
       <div className="mt-6 flex justify-between text-sm">

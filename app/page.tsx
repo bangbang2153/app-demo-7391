@@ -128,6 +128,17 @@ export default function Home(){
           ))}
         </div>
         {cars.length>0 && filtered.length===0 && <div className="text-center py-10 text-gray-500 text-sm">Tidak ada mobil sesuai filter</div>}
+        <div className="mt-10 border border-kabin rounded-[16px] overflow-hidden bg-white">
+          <div className="p-4 sm:p-5 flex flex-col sm:flex-row justify-between gap-3">
+            <div className="min-w-0">
+              <div className="text-xs font-semibold text-bata">ALAMAT GARASI</div>
+              <div className="font-semibold text-sm mt-1">Jl. Kurnia No.4, Tengkerang Labuai, Bukit Raya, Kota Pekanbaru, Riau 28289</div>
+              <a href="https://maps.app.goo.gl/JMX4412Xb1WMf9BZ7" target="_blank" rel="noopener noreferrer" className="inline-flex mt-3 px-4 py-2 rounded-full bg-aspal text-white text-xs font-semibold">Buka di Google Maps</a>
+            </div>
+            <div className="text-xs text-gray-500 self-center">Bisa cek unit langsung - share lokasi via WhatsApp</div>
+          </div>
+          <iframe title="Peta MASHUDI TRANSPORT" loading="lazy" referrerPolicy="no-referrer-when-downgrade" src="https://www.google.com/maps?q=Jl.+Kurnia+No.4,+Tengkerang+Labuai,+Bukit+Raya,+Pekanbaru,+Riau+28289&z=16&output=embed" className="w-full h-[300px] sm:h-[340px] border-t border-kabin" style={{border:0}}></iframe>
+        </div>
       </div>
     </div>
   )

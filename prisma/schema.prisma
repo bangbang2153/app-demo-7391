@@ -110,7 +110,7 @@ model Banner {
 
 model AppSettings {
   id         String  @id @default("global")
-  waNumber   String  @default("6283123768532")
+  waNumber   String  @default("6282286906897")
   waTemplate String  @default("Halo Mashudi Transport, mau sewa {car} tgl {start} s/d {end} ({mode}). Total Rp {total}. Bisa nego?")
   updatedAt  DateTime @updatedAt
 }

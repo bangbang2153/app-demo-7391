@@ -9,7 +9,7 @@ export default function BannerPopup(){
   const [banner,setBanner]=useState<Banner|null>(null);
   const [open,setOpen]=useState(false);
   const [ratio,setRatio]=useState("16/9");
-  const [waNumber,setWaNumber]=useState("6283123768532");
+  const [waNumber,setWaNumber]=useState("6282286906897");
   const [waTpl,setWaTpl]=useState("");
 
   useEffect(()=>{
