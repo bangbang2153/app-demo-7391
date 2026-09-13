@@ -565,8 +565,8 @@ export default function Admin(){
                   setForm((prev:any)=> ({...prev, images:[url, ...(prev.images||[])].slice(0,4)}));
                 }} className="mt-1 w-full text-sm" />
                 {uploading && <div className="text-xs text-red-600">Uploading...</div>}
-                {form.images?.length>0 && <div className="mt-2 flex gap-2 flex-wrap">{form.images.map((u:string,i:number)=><img loading="lazy" decoding="async" key={i} src={u} alt="" className="w-20 h-14 object-cover rounded-lg border" />)}</div>}
-                <input placeholder="Atau paste URL gambar" value={form.images?.[0]||""} onChange={e=>setForm({...form, images:[e.target.value]})} className="mt-2 border rounded-xl px-3 py-2 w-full text-sm" />
+                {form.images?.length>0 && <div className="mt-2 flex gap-2 flex-wrap">{form.images.map((u:string,i:number)=><div key={i} className="relative"><img loading="lazy" decoding="async" src={u} alt="" className="w-20 h-14 object-cover rounded-lg border" /><button type="button" onClick={()=> setForm((prev:any)=> ({...prev, images: (prev.images||[]).filter((_:string,idx:number)=> idx!==i)}))} className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-600 text-white text-xs font-bold grid place-items-center border-2 border-white shadow hover:bg-red-700" title="Hapus gambar">×</button>{i===0 && <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 text-[9px] bg-gray-900 text-white px-1.5 py-0.5 rounded-full whitespace-nowrap">Utama</span>}</div>)}</div>}
+                <input placeholder="Atau paste URL gambar" value={form.images?.[0]||""} onChange={e=>setForm({...form, images: e.target.value ? [e.target.value, ...(form.images||[]).slice(1)] : (form.images||[]).slice(1)})} className="mt-2 border rounded-xl px-3 py-2 w-full text-sm" />
               </div>
               <div className="flex gap-2 mt-2">
                 <button onClick={()=>setShowCarModal(false)} className="flex-1 py-3 rounded-full border font-semibold">Batal</button>
