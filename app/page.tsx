@@ -110,7 +110,7 @@ export default function Home(){
         <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
           {filtered.map(c=>(
             <a key={c.id} href={`/mobil/${c.slug}`} className="bg-white rounded-[16px] overflow-hidden border border-kabin block min-w-0 hover:border-bata/30 transition-colors" style={{boxShadow:"0 1px 2px rgba(16,24,32,0.06)"}}>
-              <img loading="lazy" decoding="async" src={c.images[0]} alt={c.name} className="h-44 w-full object-cover" />
+              <img loading="lazy" decoding="async" src={c.images[0]} alt={c.name} className="h-44 w-full object-cover" style={{objectPosition:(c as any).imagePosition || "50% 50%"}} />
               <div className="p-4">
                 <div className="text-xs text-gray-500 flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-sawit shrink-0"></span>{c.category} / {c.transmission} / {c.seats} kursi</div>
                 <h3 className="font-display font-bold text-[17px] leading-tight mt-1">{c.name}</h3>

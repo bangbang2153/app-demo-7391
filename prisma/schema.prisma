@@ -19,6 +19,7 @@ model Car {
   driverFeePerDay Int       @default(150000)
   qty             Int       @default(1)
   images          String[]
+  imagePosition   String    @default("50% 50%")
   features        String[]
   requirements    String[]  @default([])
   status          String    @default("active")
@@ -135,6 +136,6 @@ model Banner {
 model AppSettings {
   id         String  @id @default("global")
   waNumber   String  @default("6282286906897")
-  waTemplate String  @default("Halo Mashudi Transport, mau sewa {car} tgl {start} s/d {end} ({mode}). Total Rp {total}. Bisa nego?")
+  waTemplate String  @default("Halo Mashudi Transport, mau sewa (car) tgl (start) s/d (end) (mode). Total Rp {total}. Bisa nego?")
   updatedAt  DateTime @updatedAt
 }

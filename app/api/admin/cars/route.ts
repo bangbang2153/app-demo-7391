@@ -23,6 +23,7 @@ export async function POST(req: NextRequest){
         seats: Number(body.seats||7), pricePerDay: Number(body.pricePerDay||350000),
         driverFeePerDay: Number(body.driverFeePerDay||150000), qty: Number(body.qty||1),
         images: Array.isArray(body.images)&&body.images.length? body.images : (body.image? [body.image]: ["/images/avanza-2023.jpg"]),
+        imagePosition: typeof body.imagePosition==="string" && body.imagePosition.trim() ? body.imagePosition.trim() : "50% 50%",
         features: Array.isArray(body.features)? body.features : String(body.features||"AC, Audio").split(",").map((s:string)=>s.trim()).filter(Boolean),
         requirements: Array.isArray(body.requirements)? body.requirements : String(body.requirements||"KTP, SIM A, Deposit").split(",").map((s:string)=>s.trim()).filter(Boolean),
         status: body.status||"active"

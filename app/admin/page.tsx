@@ -84,12 +84,12 @@ export default function Admin(){
   }
   function openAdd(){
     setEditingCar(null);
-    setForm({name:"", category:"MPV", transmission:"AT", seats:7, pricePerDay:350000, driverFeePerDay:150000, qty:1, features:"AC, Audio, Bagasi", requirements:"KTP, SIM A, Deposit", images:[]});
+    setForm({name:"", category:"MPV", transmission:"AT", seats:7, pricePerDay:350000, driverFeePerDay:150000, qty:1, features:"AC, Audio, Bagasi", requirements:"KTP, SIM A, Deposit", images:[], imagePosition:"50% 50%"});
     setShowCarModal(true);
   }
   function openEdit(c:Car){
     setEditingCar(c);
-    setForm({name:c.name, category:c.category, transmission:c.transmission, seats:c.seats, pricePerDay:c.pricePerDay, driverFeePerDay:c.driverFeePerDay, qty:c.qty, features:c.features.join(", "), requirements:(c.requirements||["KTP","SIM A","Deposit"]).join(", "), images:c.images});
+    setForm({name:c.name, category:c.category, transmission:c.transmission, seats:c.seats, pricePerDay:c.pricePerDay, driverFeePerDay:c.driverFeePerDay, qty:c.qty, features:c.features.join(", "), requirements:(c.requirements||["KTP","SIM A","Deposit"]).join(", "), images:c.images, imagePosition:(c as any).imagePosition||"50% 50%"});
     setShowCarModal(true);
   }
   async function saveCar(){
@@ -98,6 +98,7 @@ export default function Admin(){
       features: String(form.features||"").split(",").map((s:string)=>s.trim()).filter(Boolean),
       requirements: String(form.requirements||"").split(",").map((s:string)=>s.trim()).filter(Boolean),
       images: form.images||[],
+      imagePosition: form.imagePosition || "50% 50%",
     };
     let r;
     if(editingCar){
@@ -567,6 +568,50 @@ export default function Admin(){
                 {uploading && <div className="text-xs text-red-600">Uploading...</div>}
                 {form.images?.length>0 && <div className="mt-2 flex gap-2 flex-wrap">{form.images.map((u:string,i:number)=><div key={i} className="relative"><img loading="lazy" decoding="async" src={u} alt="" className="w-20 h-14 object-cover rounded-lg border" /><button type="button" onClick={()=> setForm((prev:any)=> ({...prev, images: (prev.images||[]).filter((_:string,idx:number)=> idx!==i)}))} className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-600 text-white text-xs font-bold grid place-items-center border-2 border-white shadow hover:bg-red-700" title="Hapus gambar">×</button>{i===0 && <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 text-[9px] bg-gray-900 text-white px-1.5 py-0.5 rounded-full whitespace-nowrap">Utama</span>}</div>)}</div>}
                 <input placeholder="Atau paste URL gambar" value={form.images?.[0]||""} onChange={e=>setForm({...form, images: e.target.value ? [e.target.value, ...(form.images||[]).slice(1)] : (form.images||[]).slice(1)})} className="mt-2 border rounded-xl px-3 py-2 w-full text-sm" />
+              </div>
+              {/* posisi foto di card */}
+              <div className="border rounded-xl p-3 bg-gray-50/50">
+                <div className="text-xs font-semibold text-gray-700 flex items-center justify-between">
+                  <span>Posisi foto di card</span>
+                  <span className="text-[11px] font-normal text-gray-500">{form.imagePosition || "50% 50%"}</span>
+                </div>
+                <p className="text-[11px] text-gray-500">Geser agar mobil pas di tengah card depan (h-44). Preview langsung di bawah.</p>
+                {/* preview card h-44 beneran */}
+                <div className="mt-3 rounded-[12px] overflow-hidden border border-kabin bg-white">
+                  <div className="h-44 w-full overflow-hidden bg-gray-100">
+                    {(form.images?.[0]) ? (
+                      <img src={form.images[0]} alt="preview card" className="w-full h-44 object-cover" style={{objectPosition: form.imagePosition || "50% 50%"}} />
+                    ) : (
+                      <div className="w-full h-44 grid place-items-center text-xs text-gray-400">Upload dulu buat preview</div>
+                    )}
+                  </div>
+                  <div className="px-3 py-2 text-[11px] text-gray-500">{form.name || "Nama mobil"} • {form.category||"MPV"} • preview card persis home</div>
+                </div>
+                {/* preset 9 titik */}
+                <div className="mt-3 grid grid-cols-3 gap-1.5 max-w-[180px]">
+                  {[
+                    ["0% 0%","↖"],["50% 0%","↑"],["100% 0%","↗"],
+                    ["0% 50%","←"],["50% 50%","●"],["100% 50%","→"],
+                    ["0% 100%","↙"],["50% 100%","↓"],["100% 100%","↘"],
+                  ].map(([pos,icon])=>(
+                    <button key={pos} type="button" onClick={()=> setForm((p:any)=> ({...p, imagePosition: pos}))} className={`h-9 rounded-lg border text-sm font-bold ${form.imagePosition===pos?"bg-gray-900 text-white border-gray-900":"bg-white hover:bg-white border-kabin"}`} title={pos}>{icon}</button>
+                  ))}
+                </div>
+                {/* slider halus */}
+                {(()=>{
+                  const parts = String(form.imagePosition||"50% 50%").split(" ");
+                  const x = parseInt(parts[0])||50; const y = parseInt(parts[1])||50;
+                  return (
+                    <div className="mt-3 grid gap-2">
+                      <label className="text-xs flex items-center gap-2">X <input type="range" min={0} max={100} value={x} onChange={e=> setForm((p:any)=> ({...p, imagePosition: `${e.target.value}% ${y}%`}))} className="flex-1" /> <span className="w-10 text-right text-xs">{x}%</span></label>
+                      <label className="text-xs flex items-center gap-2">Y <input type="range" min={0} max={100} value={y} onChange={e=> setForm((p:any)=> ({...p, imagePosition: `${x}% ${e.target.value}%`}))} className="flex-1" /> <span className="w-10 text-right text-xs">{y}%</span></label>
+                    </div>
+                  );
+                })()}
+                <div className="mt-2 flex gap-2">
+                  <button type="button" onClick={()=> setForm((p:any)=> ({...p, imagePosition:"50% 50%"}))} className="text-xs px-3 py-1.5 rounded-full border bg-white">Reset tengah</button>
+                  <span className="text-[11px] text-gray-400 self-center">Geser slider sampai mobil pas, lalu Simpan</span>
+                </div>
               </div>
               <div className="flex gap-2 mt-2">
                 <button onClick={()=>setShowCarModal(false)} className="flex-1 py-3 rounded-full border font-semibold">Batal</button>

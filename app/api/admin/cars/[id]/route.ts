@@ -25,6 +25,7 @@ export async function PUT(req: NextRequest, {params}:{params:{id:string}}){
         driverFeePerDay: body.driverFeePerDay!=null? Number(body.driverFeePerDay): cur.driverFeePerDay,
         qty: body.qty!=null? Number(body.qty): cur.qty,
         images: newImages !== undefined ? newImages : undefined,
+        imagePosition: typeof body.imagePosition==="string" ? body.imagePosition.trim() || "50% 50%" : undefined,
         features: Array.isArray(body.features)? body.features : (body.features? String(body.features).split(",").map((s:string)=>s.trim()).filter(Boolean): undefined),
         requirements: Array.isArray(body.requirements)? body.requirements : (body.requirements!=null? String(body.requirements).split(",").map((s:string)=>s.trim()).filter(Boolean): undefined),
         status: body.status ?? cur.status,
