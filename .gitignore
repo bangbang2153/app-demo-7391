@@ -11,3 +11,4 @@ data/superadmin.meta.json
 data/admin.audit.log
 data/superadmin.2fa.json
 .progress.json
+tsconfig.tsbuildinfo

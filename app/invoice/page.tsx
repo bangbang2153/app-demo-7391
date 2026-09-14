@@ -18,8 +18,8 @@ export default function InvoicePage(){
   const [cAddr, setCAddr] = useState("Jln.FIRDAUS NO 39A TANGKERANG LABUAI - BUKIT RAYA PEKANBARU");
   const [cNpwp, setCNpwp] = useState("1091 0312 1095 0578");
   const [cPhone, setCPhone] = useState("082293239631");
-  const [invNo, setInvNo] = useState("RENT/II/21/2026");
-  const [invDate, setInvDate] = useState("2026-04-12");
+  const [invNo, setInvNo] = useState("");
+  const [invDate, setInvDate] = useState("");
   const [toName, setToName] = useState("Mohammad Amrul Faiz");
   const [toCo, setToCo] = useState("PT.MITRA PERKAS MULTIGUNA");
   const [toCity, setToCity] = useState("PEKANBARU");
@@ -38,6 +38,17 @@ export default function InvoicePage(){
       if(j.customLogo){ setCustomLogo(j.customLogo); setLogoChoice("custom"); }
       if(j.stamp) setStamp(j.stamp);
     }).catch(()=>{});
+    // auto tanggal hari ini + nomor invoice, tetap bisa diedit user
+    const now = new Date();
+    const yyyy = String(now.getFullYear());
+    const mm = String(now.getMonth()+1).padStart(2,"0");
+    const dd = String(now.getDate()).padStart(2,"0");
+    const isoToday = `${yyyy}-${mm}-${dd}`;
+    setInvDate(isoToday);
+    // invNo: RENT/MM/NN/YYYY — NN incremental harian sederhana (DD), user bisa edit bebas
+    const roman = ["","I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII"];
+    const seq = dd; // pakai tanggal sebagai nomor urut harian biar unik per hari, 01..31
+    setInvNo(`RENT/${roman[Number(mm)]}/${seq}/${yyyy}`);
   },[]);
 
   function showToast(m:string){ setToast(m); setTimeout(()=> setToast(""), 2800); }
@@ -164,10 +175,10 @@ export default function InvoicePage(){
             <button className="btn-add-item" onClick={()=> setItems([...items, {uraian:"", harga:0}])}>+ Tambah Item</button>
           </div>
 
-          {/* CATATAN BAWAH TABEL — bebas ketik + rata */}
-          <div className="form-section" style={{marginTop:14, background:"#1e1e3a", border:"1px solid #3a3a5c", borderRadius:8, padding:12}}>
-            <div className="section-label" style={{color:"#e8e0d4"}}>Catatan di bawah tabel — bebas ketik</div>
-            <div className="form-group">
+          {/* CATATAN BAWAH TABEL — bebas ketik + rata — polos tanpa kotak */}
+          <div className="form-section" style={{marginTop:10, paddingTop:6}}>
+            <span style={{fontSize:10, fontWeight:700, letterSpacing:"1.2px", textTransform:"uppercase", color:"#94A3B8"}}>Catatan di bawah tabel — bebas ketik</span>
+            <div className="form-group" style={{marginTop:8}}>
               <textarea
                 rows={4}
                 value={notes}
