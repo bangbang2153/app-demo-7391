@@ -426,7 +426,7 @@ body {
   .inv-footer{ border-top:1px solid #000 !important; }
   .inv-logo-placeholder{ background:white !important; border:1px dashed #000 !important; color:#000 !important; }
   .stamp-placeholder{ background:white !important; border:1px dashed #000 !important; color:#000 !important; }
-  .inv-notes{ background:white !important; color:#000 !important; border:1px solid #000 !important; border-left:1px solid #000 !important; border-radius:0 !important; break-inside:avoid; }
+  .inv-notes{ background:transparent !important; color:#000 !important; border:none !important; padding:6px 0 !important; margin:8px 0 10px !important; border-radius:0 !important; box-shadow:none !important; break-inside:avoid; }
   @page { margin: 10mm; }
 }
 
