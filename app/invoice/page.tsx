@@ -94,8 +94,8 @@ export default function InvoicePage(){
       <div className="topbar">
         <h1>📄 Invoice Generator</h1>
         <span className="topbar-sub">PT Mashudi Prima Transport Indonesia</span>
-        <div style={{display:"flex",gap:8}}>
-          <button className="btn-print" style={{background:"#1a1a2e",border:"1px solid #3a3a5c"}} onClick={handlePrint}>⬇ Save as PDF</button>
+        <div className="topbar-actions">
+          <button className="btn-print secondary" onClick={handlePrint}>⬇ Save as PDF</button>
           <button className="btn-print" onClick={handlePrint}>🖨 Print</button>
         </div>
       </div>
