@@ -5,6 +5,8 @@ import CarGallery from "@/components/CarGallery";
 import WaIcon from "@/components/WaIcon";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 export async function generateStaticParams(){ return seedCars.map(c=>({slug:c.slug})) }
 
 export default async function Detail({params}:{params:{slug:string}}){
