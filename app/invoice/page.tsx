@@ -80,7 +80,8 @@ export default function InvoicePage(){
 
   function handlePrint(){
     const prevTitle=document.title;
-    document.title=invNo.replace(/[^a-zA-Z0-9_-]/g,"_") || "Invoice_MASHUDI";
+    // kosongkan title biar header print browser gak nulis "Invoice Generator..." di atas kertas
+    document.title="";
     window.print();
     setTimeout(()=>{ document.title=prevTitle; }, 1000);
   }
@@ -268,6 +269,11 @@ export default function InvoicePage(){
                     <td className="total-col">{fmtRp(it.harga)}</td>
                   </tr>
                 ))}
+                {/* sub total gabung di tabel — baris terakhir, tanpa shape, hanya garis atas */}
+                <tr className="inv-subtotal-row">
+                  <td colSpan={3} style={{textAlign:"right", fontWeight:700, borderTop:"1px solid #000"}}>Sub Total</td>
+                  <td className="total-col" style={{borderTop:"1px solid #000"}}>{fmtRp(total)}</td>
+                </tr>
               </tbody>
             </table>
 
@@ -291,10 +297,6 @@ export default function InvoicePage(){
                 dangerouslySetInnerHTML={{__html: notesHtml}}
               />
             )}
-
-            <div className="inv-total-row">
-              <div className="inv-total-box"><span className="total-label">Total</span><span className="total-amount">{fmtRp(total)}</span></div>
-            </div>
 
             <div className="inv-footer">
               <div className="inv-payment">
