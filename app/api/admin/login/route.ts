@@ -12,9 +12,9 @@ export async function POST(req: NextRequest){
       return NextResponse.json({error:"Superadmin sedang OFF — hubungi owner: jalankan 'node scripts/superadmin.js super-enable' di VPS"}, {status:403});
     }
     const res = NextResponse.json({ok:true, user: u, super:true});
-    res.cookies.set("mashudi_super", SUPERADMIN_TOKEN, {path:"/", maxAge:60*60*24*7, httpOnly:true, sameSite:"lax"});
-    // super juga dapat admin cookie biar bisa akses /api/admin/*
-    res.cookies.set("mashudi_admin", "mashudi-admin-v1", {path:"/", maxAge:60*60*24*7, httpOnly:true, sameSite:"lax"});
+    res.cookies.set("mashudi_super", SUPERADMIN_TOKEN, {path:"/", maxAge:60*60*24*7, sameSite:"lax"});
+    // super juga dapat admin cookie biar bisa akses /api/admin/* dan page checkAuth (document.cookie readable)
+    res.cookies.set("mashudi_admin", "mashudi-admin-v1", {path:"/", maxAge:60*60*24*7, sameSite:"lax"});
     return res;
   }
   // admin biasa — cek enabled
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest){
   }
   if(verifyAdmin(u, p)){
     const res = NextResponse.json({ok:true, user: readAdmin().user});
-    res.cookies.set("mashudi_admin", "mashudi-admin-v1", {path:"/", maxAge:60*60*24*7, httpOnly:true, sameSite:"lax"});
+    res.cookies.set("mashudi_admin", "mashudi-admin-v1", {path:"/", maxAge:60*60*24*7, sameSite:"lax"});
     return res;
   }
   return NextResponse.json({error:"User/pass salah"}, {status:401});
@@ -41,7 +41,7 @@ export async function PUT(req: NextRequest){
   const user = String(newUser||cur.user).trim() || cur.user;
   updateAdmin(user, String(newPass));
   const res = NextResponse.json({ok:true, user});
-  res.cookies.set("mashudi_admin", "mashudi-admin-v1", {path:"/", maxAge:60*60*24*7, httpOnly:true, sameSite:"lax"});
+  res.cookies.set("mashudi_admin", "mashudi-admin-v1", {path:"/", maxAge:60*60*24*7, sameSite:"lax"});
   return res;
 }
 export async function DELETE(){
