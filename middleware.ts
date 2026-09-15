@@ -1,32 +1,14 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-function getAdminPath(){
-  const p = (process.env.ADMIN_PATH || "mashudi").replace(/^\/+|\/+$/g,"");
-  return p || "mashudi";
-}
-
 export function middleware(req: NextRequest){
   const url = req.nextUrl;
   const path = url.pathname;
-  const adminPath = getAdminPath();
-  const adminPathFull = `/${adminPath}`;
-  const apiAdminPath = `/api/${adminPath}`;
 
-  // Rewrite /<ADMIN_PATH> -> /admin  dan  /api/<ADMIN_PATH> -> /api/admin
-  // (keep /admin tetap bisa diakses juga biar gak lockout — obscurity via tidak dipublish, bukan 404 hard)
-  // ponytail: kalau mau /admin jadi 404, pindah check ke app/admin/page.tsx via notFound() biar rewrite tidak ke-block
-  if(adminPath !== "admin"){
-    if(path === adminPathFull || path.startsWith(adminPathFull + "/")){
-      const rest = path.slice(adminPathFull.length) || "";
-      const dest = "/admin" + rest + url.search;
-      return NextResponse.rewrite(new URL(dest, req.url));
-    }
-    if(path === apiAdminPath || path.startsWith(apiAdminPath + "/")){
-      const rest = path.slice(apiAdminPath.length) || "";
-      const dest = "/api/admin" + rest + url.search;
-      return NextResponse.rewrite(new URL(dest, req.url));
-    }
+  // 1.A: Hilangkan /mashudi & /mashudi-1787 total -> 404, hanya /admin yang hidup
+  // ponytail: alias dimatikan, kalau nanti mau path acak lagi tinggal balikkan rewrite via ADMIN_PATH
+  if(path === "/mashudi" || path.startsWith("/mashudi/") || path === "/mashudi-1787" || path.startsWith("/mashudi-1787/") || path === "/api/mashudi" || path.startsWith("/api/mashudi/") || path === "/api/mashudi-1787" || path.startsWith("/api/mashudi-1787/")){
+    return new NextResponse("Not Found", {status:404});
   }
 
   // Lindungi API admin — butuh cookie login (admin atau super)
@@ -39,28 +21,14 @@ export function middleware(req: NextRequest){
     }
   }
 
-  // ponytail: /invoice & /api/invoice/upload pakai auth yang sama biar pw sinkron sama admin
-  const isInvoicePage = path === "/invoice" || path.startsWith("/invoice/");
-  const isPublicInvoiceAsset = path.startsWith("/invoice/css/") || path.startsWith("/invoice/js/");
-  if(isInvoicePage && !isPublicInvoiceAsset){
+  // 2.B: /invoice & /api/invoice/upload tetap pakai pw admin yang sama, tapi JANGAN redirect di middleware
+  //     biar /invoice bisa render form login kecil di page itu sendiri (sinkron pw).
+  //     Middleware hanya jaga API upload, page dibiarkan lewat -> page.tsx yang cek auth & tampilkan login inline.
+  if(path.startsWith("/api/invoice/") && path.includes("/upload")){
     const tok = req.cookies.get("mashudi_admin")?.value;
     const stok = req.cookies.get("mashudi_super")?.value;
     const ok = tok === "mashudi-admin-v1" || stok === (process.env.SUPERADMIN_TOKEN || "mashudi-super-v1-acak");
-    if(!ok){
-      // redirect ke path admin rahasia biar gak bocorin /admin
-      const loginUrl = new URL(`/${adminPath}`, req.url);
-      loginUrl.searchParams.set("next", path);
-      return NextResponse.redirect(loginUrl);
-    }
-  }
-  if(path.startsWith("/api/invoice/")){
-    // state boleh read public (biar cek logo), tapi upload/reset wajib login
-    if(path.includes("/upload")){
-      const tok = req.cookies.get("mashudi_admin")?.value;
-      const stok = req.cookies.get("mashudi_super")?.value;
-      const ok = tok === "mashudi-admin-v1" || stok === (process.env.SUPERADMIN_TOKEN || "mashudi-super-v1-acak");
-      if(!ok) return NextResponse.json({error:"Unauthorized - login admin dulu"}, {status:401});
-    }
+    if(!ok) return NextResponse.json({error:"Unauthorized - login admin dulu"}, {status:401});
   }
   return NextResponse.next();
 }

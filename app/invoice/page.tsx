@@ -31,6 +31,21 @@ export default function InvoicePage(){
   const [notes, setNotes] = useState("");
   const [notesAlign, setNotesAlign] = useState<Align>("left");
   const [toast, setToast] = useState("");
+  const [authed, setAuthed] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [loginUser, setLoginUser] = useState("");
+  const [loginPass, setLoginPass] = useState("");
+  const [loginMsg, setLoginMsg] = useState("");
+
+  function getCookie(name:string){
+    const m = document.cookie.match(new RegExp("(^| )"+name+"=([^;]+)"));
+    return m ? decodeURIComponent(m[2]) : "";
+  }
+  function checkAuthed(){
+    const a = getCookie("mashudi_admin");
+    const s = getCookie("mashudi_super");
+    return a==="mashudi-admin-v1" || s==="mashudi-super-v1-acak";
+  }
 
   useEffect(()=>{
     fetch("/api/invoice/state").then(r=>r.json()).then(j=>{
@@ -49,7 +64,20 @@ export default function InvoicePage(){
     const roman = ["","I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII"];
     const seq = dd; // pakai tanggal sebagai nomor urut harian biar unik per hari, 01..31
     setInvNo(`RENT/${roman[Number(mm)]}/${seq}/${yyyy}`);
+    setAuthed(checkAuthed());
+    setAuthChecked(true);
   },[]);
+
+  async function invoiceLogin(){
+    setLoginMsg("");
+    const r = await fetch("/api/admin/login",{method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({user: loginUser, pass: loginPass})});
+    const j = await r.json().catch(()=> ({} as any));
+    if(!r.ok){ setLoginMsg((j as any).error||"Gagal login"); return; }
+    setTimeout(()=>{
+      if(checkAuthed()){ setAuthed(true); setLoginMsg(""); }
+      else setLoginMsg("Login ok tapi cookie tidak tersimpan — coba reload.");
+    }, 120);
+  }
 
   function showToast(m:string){ setToast(m); setTimeout(()=> setToast(""), 2800); }
 
@@ -103,7 +131,25 @@ export default function InvoicePage(){
     <>
       <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
       <link rel="stylesheet" href="/invoice/css/style.css" />
-      <div className="topbar">
+      {!authChecked ? (
+        <div style={{minHeight:"60vh", display:"grid", placeItems:"center", background:"#13132a", color:"#e8e0d4"}}><div style={{padding:20, fontSize:13, color:"#94A3B8"}}>Memuat…</div></div>
+      ) : !authed ? (
+        <div style={{minHeight:"100vh", display:"grid", placeItems:"center", background:"#13132a", padding:16}}>
+          <div style={{width:"100%", maxWidth:380, background:"#1F2937", border:"1px solid #2E3A4D", borderRadius:12, padding:20}}>
+            <div style={{width:48,height:48,borderRadius:"50%",background:"#C1272D",display:"grid",placeItems:"center",color:"#fff",fontWeight:900 as any}}>M</div>
+            <h1 style={{marginTop:14, fontSize:18, fontWeight:900, color:"#FDF8F0"}}>Masuk untuk Invoice</h1>
+            <p style={{fontSize:12, color:"#94A3B8", marginTop:6}}>Password sama dengan admin rental. Login sekali, bisa buka invoice.</p>
+            <div style={{marginTop:16, display:"grid", gap:10}}>
+              <input placeholder="Username" value={loginUser} onChange={e=> setLoginUser(e.target.value)} style={{background:"#0F172A", border:"1px solid #334155", color:"#FDF8F0", borderRadius:8, padding:"10px 12px", fontSize:13, outline:"none"}} />
+              <input type="password" placeholder="Password" value={loginPass} onChange={e=> setLoginPass(e.target.value)} onKeyDown={e=>{ if((e as any).key==="Enter") invoiceLogin(); }} style={{background:"#0F172A", border:"1px solid #334155", color:"#FDF8F0", borderRadius:8, padding:"10px 12px", fontSize:13, outline:"none"}} />
+              {loginMsg && <div style={{fontSize:12, color:"#F87171", background:"#2D1111", border:"1px solid #7F1D1D", padding:"8px 10px", borderRadius:8}}>{loginMsg}</div>}
+              <button onClick={invoiceLogin} style={{padding:"10px 14px", borderRadius:999, background:"#C1272D", color:"#fff", fontWeight:700, border:"none", cursor:"pointer"}}>Masuk</button>
+              <a href="/admin" style={{fontSize:11, color:"#94A3B8", textAlign:"center", textDecoration:"none"}}>← ke Admin</a>
+            </div>
+          </div>
+        </div>
+      ) : (
+      <><div className="topbar">
         <h1>📄 Invoice Generator</h1>
         <span className="topbar-sub">PT Mashudi Prima Transport Indonesia</span>
         <div className="topbar-actions">
@@ -331,6 +377,8 @@ export default function InvoicePage(){
       </div>
       {toast && <div className="toast show">{toast}</div>}
       <style>{`@media print{ body{background:white} .topbar,.form-panel{display:none!important} .workspace{display:block;height:auto} .preview-panel{background:white;padding:0} .invoice-doc{box-shadow:none;margin:0;width:100%} .inv-notes{break-inside:avoid} }`}</style>
+      </>
+      )}
     </>
   );
 }
