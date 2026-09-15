@@ -403,14 +403,14 @@ body {
 }
 .toast.show { opacity: 1; transform: translateY(0); }
 
-/* ── Print: kertas invoice polos — tanpa shape merah/biru, hanya garis pembatas ── */
+/* ── Print: kertas invoice polos — tanpa shape merah/biru, hanya garis pembatas, anti-kepotong ── */
 @media print {
-  body { background: white !important; color:#000 !important; }
+  html, body { background: white !important; color:#000 !important; height:auto !important; overflow:visible !important; }
   body > header, body > footer, header, footer, nav, .topbar, .form-panel { display: none !important; }
-  main { padding:0 !important; margin:0 !important; }
-  .workspace { display: block !important; height: auto !important; overflow: visible !important; }
-  .preview-panel { background: white !important; padding: 0 !important; display:block !important; overflow:visible !important; }
-  .invoice-doc { background:white !important; color:#000 !important; box-shadow:none !important; margin:0 !important; width:100% !important; max-width:none !important; min-height:auto !important; border:none !important; }
+  main { padding:0 !important; margin:0 !important; max-width:none !important; }
+  .workspace { display: block !important; height:auto !important; min-height:0 !important; overflow:visible !important; }
+  .preview-panel { background: white !important; padding: 0 !important; display:block !important; overflow:visible !important; height:auto !important; min-height:0 !important; }
+  .invoice-doc { background:white !important; color:#000 !important; box-shadow:none !important; margin:0 !important; width:100% !important; max-width:none !important; min-width:0 !important; min-height:0 !important; height:auto !important; overflow:visible !important; border:none !important; transform:none !important; }
   .inv-header{ border-bottom:1px solid #000 !important; padding-bottom:16px !important; margin-bottom:20px !important; }
   .inv-company h2{ color:#000 !important; }
   .inv-company p, .inv-meta td, .inv-to p, .inv-to span, .inv-payment h4, .inv-payment td, .inv-sign > p{ color:#000 !important; }
